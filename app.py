@@ -1630,7 +1630,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.3.1",
+        "version": "2.3.2",
         "name": "SM MAL CATALOG v2",
         "description": "Malayalam movies, series & documentaries catalog "
                        "(Msone + Movie Mirror + Team GOAT combined) WITH "
@@ -1820,7 +1820,7 @@ def srt(src, key):
 @app.route("/sub/manifest.json")
 def sub_manifest():
     resp = jsonify({
-        "id": "com.smmal.subtitles",
+        "id": "org.sm.malsub.tv",
         "version": "1.2.4",
         "name": "SM MAL SUB",
         "description": "Malayalam subtitles from Movie Mirror + Team GOAT "
