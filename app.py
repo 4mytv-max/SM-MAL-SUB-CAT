@@ -1579,11 +1579,15 @@ def _msone_official_entries(vtype, rid):
             surl = s.get("url")
             if not surl:
                 continue
-            out.append({
-                "id": f"smsub:msone_off:{rid}:{s.get('id', '')}",
+            entry = {
+                "id": s.get("id", ""),
                 "url": surl,
                 "lang": s.get("lang", "mal"),
-            })
+            }
+            # Preserve label if present (TV apps need it to display)
+            if s.get("label"):
+                entry["label"] = s["label"]
+            out.append(entry)
         return out
     except Exception:
         return []
@@ -1626,7 +1630,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.2.8",
+        "version": "2.2.9",
         "name": "SM MAL CATALOG v2",
         "description": "Malayalam movies, series & documentaries catalog "
                        "(Msone + Movie Mirror + Team GOAT combined) WITH "
@@ -1770,14 +1774,6 @@ def _subtitle_entries(prefix, vtype, rid):
     # Official Msone addon (pass-through) — covers Msone-only titles
     # that Cloudflare blocks us from fetching directly.
     out.extend(_msone_official_entries(vtype, rid))
-    # HARDCODED: One Life (tt13097932) - official API blocked from Render
-    # Fetched manually 2026-10-08 - user requires this
-    if rid == "tt13097932" and vtype == "movie":
-        out.append({
-            "id": "smsub:msone:tt13097932",
-            "url": "https://malayalamsubtitles.org/?wpdmdl=53639&source=nuvio&imdb_id=tt13097932&type=movie",
-            "lang": "mal",
-        })
     return out
 
 
