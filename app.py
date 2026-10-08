@@ -718,8 +718,14 @@ def _live_msone_releases():
             if enrich.get("imdb_id"):
                 it["card_id"] = enrich["imdb_id"]
             items.append(it)
-            if len(items) >= 10:
-                break
+            # Don't break at 10 - process all RSS items to find overrides like One Life
+            # We'll trim to 10 at the end, prioritizing items with IMDb IDs
+        # end for loop - process all items
+    except Exception:
+        pass
+    # Sort: items with IMDb IDs first, then by original order, take top 12
+    items.sort(key=lambda x: (0 if x["card_id"].startswith("tt") else 1))
+    items = items[:12]
     except Exception:
         pass
     # fallback to saved data if live fetch gave nothing usable
@@ -1599,7 +1605,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.2.0",
+        "version": "2.2.1",
         "name": "SM MAL CATALOG v2",
         "description": "Malayalam movies, series & documentaries catalog "
                        "(Msone + Movie Mirror + Team GOAT combined) WITH "
