@@ -1626,7 +1626,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.2.7",
+        "version": "2.2.8",
         "name": "SM MAL CATALOG v2",
         "description": "Malayalam movies, series & documentaries catalog "
                        "(Msone + Movie Mirror + Team GOAT combined) WITH "
@@ -1803,7 +1803,7 @@ def _serve_srt(src, key):
             return jsonify({"error": "not found"}), 404
     with open(path, "rb") as f:
         data = f.read()
-    return Response(data, mimetype="text/plain; charset=utf-8",
+    return Response(data, content_type="text/plain; charset=utf-8",
                     headers={"Access-Control-Allow-Origin": "*"})
 
 
