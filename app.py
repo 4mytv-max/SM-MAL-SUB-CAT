@@ -729,8 +729,6 @@ def _live_msone_releases():
     # Sort: items with IMDb IDs first, then by original order, take top 12
     items.sort(key=lambda x: (0 if x["card_id"].startswith("tt") else 1))
     items = items[:12]
-    except Exception:
-        pass
     # fallback to saved data if live fetch gave nothing usable
     if not items:
         try:
@@ -1608,7 +1606,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.2.2",
+        "version": "2.2.3",
         "name": "SM MAL CATALOG v2",
         "description": "Malayalam movies, series & documentaries catalog "
                        "(Msone + Movie Mirror + Team GOAT combined) WITH "
