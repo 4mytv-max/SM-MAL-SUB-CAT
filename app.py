@@ -729,24 +729,6 @@ def _live_msone_releases():
     # Sort: items with IMDb IDs first, then by original order, take top 12
     items.sort(key=lambda x: (0 if x["card_id"].startswith("tt") else 1))
     items = items[:12]
-    # FORCE-ADD One Life if not present (user requires it in Msone New Releases)
-    one_life_ids = [it.get("card_id") for it in items]
-    if "tt13097932" not in one_life_ids:
-        items.insert(0, {
-            "card_id": "tt13097932",
-            "name": "One Life",
-            "name_ml": "വൺ ലൈഫ്",
-            "media": "movie",
-            "poster_path": "/yvnIWt2j8VnDgwKJE2VMiFMa2Qo.jpg",
-            "poster_url": None,
-            "backdrop_path": None,
-            "overview": "",
-            "year": "2023",
-            "genre_ids": [],
-            "sources": ["msone"],
-            "post_urls": {"msone": "https://malayalamsubtitles.org/languages/english/one-life-2023/"},
-        })
-        items = items[:12]
     # fallback to saved data if live fetch gave nothing usable
     if not items:
         try:
@@ -781,6 +763,24 @@ def _live_msone_releases():
                 })
         except Exception:
             pass
+    # FORCE-ADD One Life if not present (user requires it in Msone New Releases)
+    one_life_ids = [it.get("card_id") for it in items]
+    if "tt13097932" not in one_life_ids:
+        items.insert(0, {
+            "card_id": "tt13097932",
+            "name": "One Life",
+            "name_ml": "വൺ ലൈഫ്",
+            "media": "movie",
+            "poster_path": "/yvnIWt2j8VnDgwKJE2VMiFMa2Qo.jpg",
+            "poster_url": None,
+            "backdrop_path": None,
+            "overview": "",
+            "year": "2023",
+            "genre_ids": [],
+            "sources": ["msone"],
+            "post_urls": {"msone": "https://malayalamsubtitles.org/languages/english/one-life-2023/"},
+        })
+        items = items[:12]
     with _newrel_lock:
         _newrel_cache["msone"] = {"at": time.time(), "items": items}
     return items
@@ -1624,7 +1624,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.2.4",
+        "version": "2.2.5",
         "name": "SM MAL CATALOG v2",
         "description": "Malayalam movies, series & documentaries catalog "
                        "(Msone + Movie Mirror + Team GOAT combined) WITH "
