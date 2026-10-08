@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 """
-SM MAL CAT+SUB by Nandu10 — standalone service.
+SM MAL SUB by Nandu10 — standalone service.
 
-Catalog + meta + subtitles. Merges Msone + Movie Mirror + Team GOAT
-catalogs (same merged data as the MEGA addon) AND serves Malayalam
-subtitles from all three sites.
+Malayalam subtitles from Msone + Movie Mirror + Team GOAT, one entry
+per source. Subtitles only — video comes from your own sources.
 
 Routes:
   /manifest.json
-  /catalog/<type>/<id>.json
-  /meta/<type>/<id>.json
   /subtitles/<type>/<id>.json
   /srt/<src>/<key>.srt
+
+Data (in ./data/):
+  mm_data.json     Movie Mirror items (imdb_id -> sub_url)
+  goat_data.json   Team GOAT items (imdb_id -> sub_url)
+  mzone_data.json  Msone items (imdb_id -> post_url)
 """
 import html
 import io
@@ -24,7 +26,6 @@ import time
 import urllib.parse
 import urllib.request
 import zipfile
-from collections import Counter
 
 from flask import Flask, jsonify, request, Response
 
@@ -32,9 +33,6 @@ app = Flask(__name__)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
-
-POSTER = "https://image.tmdb.org/t/p/w500"
-BG = "https://image.tmdb.org/t/p/w780"
 
 UA = ("Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/126.0 Mobile Safari/537.36")
@@ -50,746 +48,6 @@ TMDB_API_KEY = os.environ.get("TMDB_API_KEY", "")
 MM_WP_API = "https://moviemirrorsubtitles.com/wp-json/wp/v2"
 GOAT_HOME = "https://malayalamsubtitles.in/"
 LIVE_URL_TTL = 7 * 24 * 3600   # found live SRT URLs rarely change
-
-TMDB_GENRES = {
-    28: "Action", 12: "Adventure", 16: "Animation", 35: "Comedy", 80: "Crime",
-    99: "Documentary", 18: "Drama", 10751: "Family", 14: "Fantasy",
-    36: "History", 27: "Horror", 10402: "Music", 9648: "Mystery",
-    10749: "Romance", 878: "Science Fiction", 10770: "TV Movie",
-    53: "Thriller", 10752: "War", 37: "Western", 10759: "Action & Adventure",
-    10762: "Kids", 10763: "News", 10764: "Reality", 10765: "Sci-Fi & Fantasy",
-    10766: "Soap", 10767: "Talk", 10768: "War & Politics",
-}
-
-LANG_NAMES = {
-    "english": "English", "korean": "Korean", "hindi": "Hindi",
-    "japanese": "Japanese", "french": "French", "spanish": "Spanish",
-    "mandarin": "Mandarin", "telugu": "Telugu", "tamil": "Tamil",
-    "malayalam": "Malayalam", "cantonese": "Cantonese",
-    "indonesian": "Indonesian", "thai": "Thai", "german": "German",
-    "italian": "Italian", "russian": "Russian", "portuguese": "Portuguese",
-    "dutch": "Dutch", "swedish": "Swedish", "danish": "Danish",
-    "norwegian": "Norwegian", "finnish": "Finnish", "polish": "Polish",
-    "turkish": "Turkish", "arabic": "Arabic", "persian": "Persian",
-    "urdu": "Urdu", "bengali": "Bengali", "punjabi": "Punjabi",
-    "marathi": "Marathi", "kannada": "Kannada", "gujarati": "Gujarati",
-    "vietnamese": "Vietnamese", "tagalog": "Tagalog", "filipino": "Filipino",
-    "malay": "Malay", "hebrew": "Hebrew", "greek": "Greek",
-    "ukrainian": "Ukrainian", "chinese": "Chinese", "czech": "Czech",
-    "serbian": "Serbian", "romanian": "Romanian", "hungarian": "Hungarian",
-    "dzongkha": "Dzongkha",
-}
-
-SITE_LABEL = {"msone": "Msone", "moviemirror": "Movie Mirror",
-              "teamgoat": "Team GOAT"}
-
-# Documentary subject buckets: (slug, label, genre_ids, keywords)
-DOC_SUBJECTS = [
-    ("nature", "Nature & Wildlife", None,
-     ["nature", "wildlife", "wild ", "planet", "earth", "ocean", "sea ",
-      "seas", "animal", "dinosaur", "jungle", "forest", "bird", "penguin",
-      "octopus", "chimpanzee", "lion", "tiger", "bear", "shark", "reef",
-      "safari", "attenborough", "antarctica", "amazon", "savanna"]),
-    ("history", "History", [36],
-     ["history", "historical", "world war", "ancient", "empire",
-      "civilization", "dynasty", "kingdom", "medieval"]),
-    ("science", "Science & Space", None,
-     ["science", "space", "nasa", "universe", "cosmos", "quantum", "physics",
-      "technology", "robot", "climate", "astronaut", "moon landing",
-      "genetic", "evolution"]),
-    ("music", "Music & Arts", [10402],
-     ["music", "concert", "band ", "singer", "rock", "jazz", "symphony",
-      "opera", "hip hop", "dj "]),
-    ("crime", "True Crime", [80],
-     ["crime", "murder", "killer", "heist", "mafia", "drug",
-      "serial killer", "scam", "fraud", "prison"]),
-    ("sports", "Sports", None,
-     ["sport", "football", "soccer", "olympic", "fifa", "cricket", "boxing",
-      "race", "marathon", "tennis", "golf", "formula 1", "wrestling"]),
-    ("biography", "Biography", None,
-     ["biograph", "life story", "untold story", "the life of",
-      "portrait of"]),
-]
-DOC_SUBJECT_LABEL = {s: l for s, l, _, _ in DOC_SUBJECTS}
-DOC_SUBJECT_LABEL["more"] = "More Documentaries"
-
-
-def doc_subject(it):
-    gids = it.get("genre_ids") or []
-    text = ((it.get("name") or "") + " " + (it.get("overview") or "")).lower()
-    for slug, _label, gids_match, keywords in DOC_SUBJECTS:
-        if gids_match and any(g in gids for g in gids_match):
-            return slug
-        if any(k in text for k in keywords):
-            return slug
-    return "more"
-
-
-TILES = [
-    {"tile": "movies", "file": "movies.png", "name": "Movies",
-     "desc": "Every movie with Malayalam subtitles — "
-             "Msone + Movie Mirror + Team GOAT combined."},
-    {"tile": "series", "file": "series.png", "name": "Series",
-     "desc": "Every series with Malayalam subtitles — "
-             "Msone + Movie Mirror + Team GOAT combined."},
-    {"tile": "docs", "file": "docs.png", "name": "Documentaries",
-     "desc": "Nature, history, science and more — documentaries with "
-             "Malayalam subtitles from all three sites."},
-]
-
-
-# ---------------- catalog data ----------------
-_mega_data = None
-_mega_defs = None
-_mega_hidden_defs = None
-_mega_metas = {}
-_mega_by_id = None
-
-
-def _all_cat_defs():
-    """All catalogs including hidden (for API lookup)."""
-    return smc_catalog_defs() + (_mega_hidden_defs or [])
-
-
-def mega_load():
-    global _mega_data
-    if _mega_data is None:
-        p = os.path.join(DATA_DIR, "mega_data.json")
-        with open(p, encoding="utf-8") as f:
-            _mega_data = json.load(f)
-    return _mega_data
-
-
-# IMDb ID overrides for titles missing them in mega_data (TMDB ID -> IMDb ID)
-# These enable Torrentio/Comet to find streams
-IMDB_OVERRIDES = {
-    4327: "tt0096657",    # Mr. Bean (1990 series)
-    1044: "tt0795176",    # Planet Earth (2006)
-    68595: "tt5491994",   # Planet Earth II (2016)
-    1430: "tt0081846",    # Cosmos: A Personal Voyage (1980)
-    82953: "tt9130692",   # Dynasties (2018)
-    95171: "tt10324164",  # Prehistoric Planet (2022)
-}
-
-
-def all_items():
-    items = mega_load().get("items", [])
-    # Apply IMDb ID overrides
-    for it in items:
-        tmdb = it.get("tmdb_id")
-        if not it.get("imdb_id") and tmdb in IMDB_OVERRIDES:
-            it["imdb_id"] = IMDB_OVERRIDES[tmdb]
-            it["card_id"] = IMDB_OVERRIDES[tmdb]
-    return items
-
-
-def is_doc(it):
-    return 99 in (it.get("genre_ids") or [])
-
-
-def lang_name(slug):
-    return LANG_NAMES.get(slug, slug.replace("-", " ").replace("_", " ").title())
-
-
-def smc_catalog_defs():
-    """Ordered home-page rows. Cached."""
-    global _mega_defs, _mega_hidden_defs
-    if _mega_defs is not None:
-        return _mega_defs
-    items = all_items()
-    movies = [it for it in items if it["media"] == "movie"]
-    series = [it for it in items if it["media"] == "tv"]
-    docs_m = [it for it in movies if is_doc(it)]
-    docs_s = [it for it in series if is_doc(it)]
-
-    cats = [
-        {"id": "smc_new_msone", "type": "movie",
-         "name": "Msone New Releases", "kind": "live_msone"},
-        {"id": "smc_new_goat", "type": "movie",
-         "name": "Team GOAT New Releases", "kind": "live_goat"},
-        {"id": "smc_new_mm", "type": "movie",
-         "name": "Movie Mirror New Releases", "kind": "live_mm"},
-        {"id": "smc_natsci_docs", "type": "series",
-         "name": "Nature and Science Documentaries", "kind": "doc_natsci"},
-        {"id": "smc_ko_new_m", "type": "movie",
-         "name": "Korean New Movies", "kind": "ko_new", "media": "movie"},
-        {"id": "smc_ko_new_s", "type": "series",
-         "name": "Korean New Series", "kind": "ko_new", "media": "tv"},
-        {"id": "smc_ko_all_m", "type": "movie",
-         "name": "Korean Movies All Time", "kind": "ko_all", "media": "movie"},
-        {"id": "smc_ko_all_s", "type": "series",
-         "name": "Korean Series All Time", "kind": "ko_all", "media": "tv"},
-        {"id": "smc_latest_movies", "type": "movie",
-         "name": "Latest Movies", "kind": "latest", "media": "movie"},
-        {"id": "smc_latest_series", "type": "series",
-         "name": "Latest Series", "kind": "latest", "media": "tv"},
-        {"id": "smc_latest_docs", "type": "movie",
-         "name": "Latest Documentaries", "kind": "latest_docs"},
-    ]
-    # Genre rows grouped: for each genre, Movies then Series then Docs
-    mg = Counter(g for it in movies for g in (it.get("genre_ids") or [])
-                 if g != 99 and g in TMDB_GENRES)
-    sg = Counter(g for it in series for g in (it.get("genre_ids") or [])
-                 if g != 99 and g in TMDB_GENRES)
-    all_genres = Counter()
-    all_genres.update(mg)
-    all_genres.update(sg)
-    for gid, _ in all_genres.most_common():
-        gname = TMDB_GENRES[gid]
-        if mg.get(gid):
-            cats.append({"id": f"smc_mgenre_{gid}", "type": "movie",
-                         "name": f"{gname}: Movies",
-                         "kind": "genre", "genre_id": gid, "media": "movie"})
-        if sg.get(gid):
-            cats.append({"id": f"smc_sgenre_{gid}", "type": "series",
-                         "name": f"{gname}: Series",
-                         "kind": "genre", "genre_id": gid, "media": "tv"})
-    # Language rows grouped similarly
-    ml = Counter(it["lang"] for it in movies if it.get("lang"))
-    sl = Counter(it["lang"] for it in series if it.get("lang"))
-    all_langs = Counter()
-    all_langs.update(ml)
-    all_langs.update(sl)
-    for lang, cnt in all_langs.most_common():
-        if cnt < 10:
-            continue
-        lname = lang_name(lang)
-        if ml.get(lang, 0) >= 10:
-            cats.append({"id": f"smc_mlang_{lang}", "type": "movie",
-                         "name": f"{lname}: Movies",
-                         "kind": "lang", "lang": lang, "media": "movie"})
-        if sl.get(lang, 0) >= 10:
-            cats.append({"id": f"smc_slang_{lang}", "type": "series",
-                         "name": f"{lname}: Series",
-                         "kind": "lang", "lang": lang, "media": "tv"})
-    # ---- Documentaries ----
-    ds = Counter(doc_subject(it) for it in docs_m)
-    order = [s for s, _, _, _ in DOC_SUBJECTS] + ["more"]
-    for slug in order:
-        if ds.get(slug):
-            cats.append({"id": f"smc_dsub_{slug}", "type": "movie",
-                         "name": f"Documentaries: {DOC_SUBJECT_LABEL[slug]}",
-                         "kind": "doc_subject", "subject": slug})
-    dl = Counter(it["lang"] for it in docs_m if it.get("lang"))
-    for lang, cnt in dl.most_common():
-        if cnt < 5:
-            continue
-        cats.append({"id": f"smc_dlang_{lang}", "type": "movie",
-                     "name": f"Documentaries: {lang_name(lang)}",
-                     "kind": "doc_lang", "lang": lang})
-    if docs_s:
-        cats.append({"id": "smc_docs_series", "type": "series",
-                     "name": "Documentaries: Doc Series",
-                     "kind": "docs_series"})
-    # Other documentaries (non-nature/science), movies + series
-    other_docs = [it for it in all_items() if is_doc(it)
-                  and doc_subject(it) not in ("nature", "science")]
-    if other_docs:
-        cats.append({"id": "smc_doc_other", "type": "movie",
-                     "name": "Documentary Movies and Series",
-                     "kind": "doc_other"})
-    _mega_defs = cats
-    _mega_hidden_defs = []
-    return cats
-
-
-def _items_for_cat(cat):
-    items = all_items()
-    kind = cat["kind"]
-    if kind == "tiles":
-        return []
-    if kind == "latest_all":
-        return items  # pre-sorted newest-first
-    if kind == "live_msone":
-        return _live_msone_releases()
-    if kind == "live_goat":
-        return _live_goat_releases()
-    if kind == "live_mm":
-        return _live_mm_releases()
-    if kind == "doc_natsci":
-        # nature & science documentary series (Discovery/NatGeo style)
-        # only titles with IMDb IDs (so Torrentio can find streams)
-        return [it for it in items
-                if it["media"] == "tv" and is_doc(it)
-                and doc_subject(it) in ("nature", "science")
-                and it.get("imdb_id")]
-    if kind == "doc_other":
-        # other documentaries (non-nature/science), movies + series
-        return [it for it in items
-                if is_doc(it)
-                and doc_subject(it) not in ("nature", "science")]
-    if kind == "media":
-        items = [it for it in items if it["media"] == cat["media"]]
-        return sorted(items, key=lambda x: (x.get("name") or "").lower())
-    if kind == "latest":
-        return [it for it in items if it["media"] == cat["media"]]
-    if kind == "ko_new":
-        # Korean new releases (newest first) - only with IMDb IDs
-        ko = [it for it in items
-              if it["media"] == cat["media"] and it.get("lang") == "korean"
-              and it.get("imdb_id")]
-        return ko[:50]
-    if kind == "ko_all":
-        # Korean all time (alphabetical) - only with IMDb IDs
-        ko = [it for it in items
-              if it["media"] == cat["media"] and it.get("lang") == "korean"
-              and it.get("imdb_id")]
-        return sorted(ko, key=lambda x: (x.get("name") or "").lower())[:50]
-    if kind == "genre":
-        return [it for it in items
-                if it["media"] == cat["media"]
-                and cat["genre_id"] in (it.get("genre_ids") or [])]
-    if kind == "lang":
-        return [it for it in items
-                if it["media"] == cat["media"] and it.get("lang") == cat["lang"]]
-    if kind == "latest_docs":
-        return [it for it in items
-                if it["media"] == "movie" and is_doc(it)]
-    if kind == "docs_all":
-        items = [it for it in items
-                 if it["media"] == "movie" and is_doc(it)]
-        return sorted(items, key=lambda x: (x.get("name") or "").lower())
-    if kind == "doc_subject":
-        return [it for it in items
-                if it["media"] == "movie" and is_doc(it)
-                and doc_subject(it) == cat["subject"]]
-    if kind == "doc_lang":
-        return [it for it in items
-                if it["media"] == "movie" and is_doc(it)
-                and it.get("lang") == cat["lang"]]
-    if kind == "docs_series":
-        return [it for it in items
-                if it["media"] == "tv" and is_doc(it)]
-    return []
-
-
-# ---------------- series episodes (videos[]) ----------------
-# Stremio/Nuvio need a "videos" array on series meta so stream addons
-# (Torrentio/Comet) can resolve episode streams. Without it every
-# series shows "Playback unavailable".
-EP_TTL = 30 * 24 * 3600  # episode lists rarely change
-
-
-def _ep_cache_load():
-    try:
-        with open(EP_CACHE, encoding="utf-8") as f:
-            return json.load(f)
-    except (OSError, ValueError):
-        return {}
-
-
-def _ep_cache_save(c):
-    tmp = EP_CACHE + ".tmp"
-    with open(tmp, "w", encoding="utf-8") as f:
-        json.dump(c, f)
-    os.replace(tmp, EP_CACHE)
-
-
-def _tmdb_tv_id(it):
-    """Numeric TMDB TV id for a series item, or None."""
-    cid = it.get("card_id") or ""
-    if cid.startswith("tmdb:") and cid[5:].isdigit():
-        return cid[5:]
-    if re.match(r"^tt\d+$", cid) and TMDB_API_KEY:
-        try:
-            data = _api_fetch_json(
-                "https://api.themoviedb.org/3/find/%s?api_key=%s"
-                "&external_source=imdb_id" % (cid, TMDB_API_KEY))
-            tr = data.get("tv_results") or []
-            if tr:
-                return str(tr[0]["id"])
-        except Exception:
-            pass
-    return None
-
-
-def _series_videos(it):
-    """Stremio videos[] for a series item. Cached 30d. None if unavailable."""
-    if it.get("media") != "tv" or not TMDB_API_KEY:
-        return None
-    tmdb_id = _tmdb_tv_id(it)
-    if not tmdb_id:
-        return None
-    # Prefer IMDb id in video ids (stream addons resolve tt..:s:e best)
-    cid = it.get("card_id") or ""
-    vid_prefix = cid if re.match(r"^tt\d+$", cid) else "tmdb:" + tmdb_id
-    cache = _ep_cache_load()
-    now = time.time()
-    ck = "tv:" + tmdb_id
-    e = cache.get(ck)
-    if e and now - e.get("at", 0) < EP_TTL and e.get("videos"):
-        return e["videos"]
-    try:
-        tv = _api_fetch_json(
-            "https://api.themoviedb.org/3/tv/%s?api_key=%s"
-            % (tmdb_id, TMDB_API_KEY))
-        videos = []
-        for s in tv.get("seasons") or []:
-            sn = s.get("season_number")
-            if not isinstance(sn, int) or sn < 1:
-                continue  # skip "Specials"
-            sd = _api_fetch_json(
-                "https://api.themoviedb.org/3/tv/%s/season/%d?api_key=%s"
-                % (tmdb_id, sn, TMDB_API_KEY))
-            for ep in sd.get("episodes") or []:
-                en = ep.get("episode_number")
-                if not isinstance(en, int):
-                    continue
-                videos.append({
-                    "id": "%s:%d:%d" % (vid_prefix, sn, en),
-                    "title": "S%d E%d - %s" % (sn, en, ep.get("name") or ""),
-                    "season": sn,
-                    "episode": en,
-                    "released": ep.get("air_date") or "",
-                })
-        if videos:
-            cache[ck] = {"at": now, "videos": videos}
-            _ep_cache_save(cache)
-            return videos
-    except Exception:
-        pass
-    return None
-
-
-def _to_meta(it, with_videos=False):
-    disp = it["name"] + (f" / {it['name_ml']}" if it.get("name_ml") else "")
-    labels = [SITE_LABEL[s] for s in it.get("sources", []) if s in SITE_LABEL]
-    urls = "\n".join(it.get("post_urls", {}).values())
-    desc = (it.get("overview") or "")
-    desc += ("\n\n\U0001F4DD Malayalam subtitles: " + ", ".join(labels)
-             if labels else "")
-    if urls:
-        desc += "\n" + urls
-    # poster: TMDB path first, then direct URL (GOAT homepage)
-    poster = None
-    if it.get("poster_path"):
-        poster = f"{POSTER}{it['poster_path']}"
-    elif it.get("poster_url"):
-        poster = it["poster_url"]
-    meta = {
-        "id": it["card_id"],
-        "type": "movie" if it["media"] == "movie" else "series",
-        "name": disp,
-        "poster": poster,
-        "background": f"{BG}{it['backdrop_path']}" if it.get("backdrop_path") else None,
-        "description": desc.strip(),
-        "releaseInfo": str(it.get("year") or ""),
-        "genres": [TMDB_GENRES[g] for g in (it.get("genre_ids") or [])
-                   if g in TMDB_GENRES],
-    }
-    if with_videos and it.get("media") == "tv":
-        vids = _series_videos(it)
-        if vids:
-            meta["videos"] = vids
-    return meta
-
-
-# ---------------- live new releases ----------------
-# Fetched fresh from each site (cached 1h). Powers the top 3 rows:
-# "New releases on MSONE / Team GOAT / Movie Mirror".
-NEWREL_TTL = 3600  # 1 hour cache
-_newrel_cache = {}
-_newrel_lock = threading.Lock()
-
-MSONE_RSS = "https://malayalamsubtitles.org/feed/"
-
-
-def _tmdb_search_enrich(title_en, year):
-    """Search TMDB for title+year. Returns dict with poster_path,
-    overview, genre_ids, imdb_id, media, or None."""
-    if not TMDB_API_KEY or not title_en:
-        return None
-    try:
-        q = urllib.parse.quote(title_en)
-        # try with year first, then without year as fallback
-        for mtype in ("movie", "tv"):
-            for try_year in ([year] if year else []) + [None]:
-                if try_year:
-                    yparam = (f"&year={try_year}" if mtype == "movie"
-                              else f"&first_air_date_year={try_year}")
-                else:
-                    yparam = ""
-                api = (f"https://api.themoviedb.org/3/search/{mtype}"
-                       f"?api_key={TMDB_API_KEY}&query={q}{yparam}&page=1")
-                data = _api_fetch_json(api, timeout=10)
-                results = data.get("results") or []
-                if results:
-                    r = results[0]
-                    # get imdb id via details
-                    imdb_id = None
-                    try:
-                        det = _api_fetch_json(
-                            f"https://api.themoviedb.org/3/{mtype}/{r['id']}"
-                            f"?api_key={TMDB_API_KEY}"
-                            f"&append_to_response=external_ids",
-                            timeout=10)
-                        imdb_id = (det.get("external_ids") or {}).get(
-                            "imdb_id")
-                    except Exception:
-                        pass
-                    return {
-                        "poster_path": r.get("poster_path"),
-                        "backdrop_path": r.get("backdrop_path"),
-                        "overview": r.get("overview"),
-                        "genre_ids": r.get("genre_ids") or [],
-                        "imdb_id": imdb_id,
-                        "media": "tv" if mtype == "tv" else "movie",
-                    }
-        return None
-    except Exception:
-        return None
-
-
-def _parse_msone_title(raw):
-    """'Nine Puzzles / നയൻ പസിൽസ് (2025)' -> (en, ml, year)."""
-    raw = html.unescape(raw or "").strip()
-    year = None
-    ym = re.search(r"\((19|20)\d{2}\)?\s*$", raw)
-    if ym:
-        year = re.search(r"(19|20)\d{2}", ym.group(0)).group(0)
-        raw = raw[:ym.start()].strip()
-    parts = [p.strip() for p in raw.split("/", 1)]
-    en = parts[0] if parts else raw
-    ml = parts[1] if len(parts) > 1 else None
-    return en, ml, year
-
-
-def _live_msone_releases():
-    """10 latest Msone releases from RSS feed (live).
-    Falls back to saved data if live fetch fails."""
-    with _newrel_lock:
-        e = _newrel_cache.get("msone")
-        now = time.time()
-        if e and now - e["at"] < NEWREL_TTL:
-            return e["items"]
-    items = []
-    try:
-        raw = _sub_fetch(MSONE_RSS, timeout=15, retries=2)
-        xml = raw.decode("utf-8", errors="replace")
-        for m in re.finditer(
-                r"<item>.*?<title>(.*?)</title>.*?<link>(.*?)</link>",
-                xml, re.S):
-            title_raw = re.sub(r"<!\[CDATA\[(.*?)\]\]>", r"\1", m.group(1),
-                               flags=re.S)
-            link = m.group(2).strip()
-            en, ml, year = _parse_msone_title(title_raw)
-            slug = link.rstrip("/").split("/")[-1]
-            if not en:
-                continue
-            enrich = _tmdb_search_enrich(en, year)
-            # skip items without posters (can't show in catalog)
-            if not enrich or not enrich.get("poster_path"):
-                continue
-            it = {
-                "card_id": f"smcs:new:msone:{slug}",
-                "name": en,
-                "name_ml": ml,
-                "media": (enrich or {}).get("media", "movie"),
-                "poster_path": enrich.get("poster_path"),
-                "backdrop_path": enrich.get("backdrop_path"),
-                "overview": enrich.get("overview") or "",
-                "year": year,
-                "genre_ids": enrich.get("genre_ids") or [],
-                "sources": ["msone"],
-                "post_urls": {"msone": link},
-            }
-            if enrich.get("imdb_id"):
-                it["card_id"] = enrich["imdb_id"]
-            items.append(it)
-            if len(items) >= 10:
-                break
-    except Exception:
-        pass
-    # fallback to saved data if live fetch gave nothing usable
-    if not items:
-        try:
-            p = os.path.join(DATA_DIR, "mzone_data.json")
-            with open(p, encoding="utf-8") as f:
-                mz = json.load(f)
-            for it in (mz.get("sections", {}).get("New Releases", [])[:10]):
-                if not it.get("poster_path"):
-                    continue
-                items.append({
-                    "card_id": it.get("imdb_id") or
-                               f"smcs:new:msone:{it.get('id')}",
-                    "name": it.get("name") or "",
-                    "name_ml": it.get("name_ml"),
-                    "media": "tv" if it.get("media") == "tv" else "movie",
-                    "poster_path": it.get("poster_path"),
-                    "backdrop_path": it.get("backdrop_path"),
-                    "overview": it.get("overview") or "",
-                    "year": it.get("year"),
-                    "genre_ids": it.get("genre_ids") or [],
-                    "sources": ["msone"],
-                    "post_urls": {"msone": it.get("post_url") or ""},
-                })
-        except Exception:
-            pass
-    with _newrel_lock:
-        _newrel_cache["msone"] = {"at": time.time(), "items": items}
-    return items
-
-
-def _live_goat_releases():
-    """Latest Team GOAT releases from homepage (live, newest first)."""
-    with _newrel_lock:
-        e = _newrel_cache.get("goat")
-        now = time.time()
-        if e and now - e["at"] < NEWREL_TTL:
-            return e["items"]
-    items = []
-    try:
-        raw = _sub_fetch(GOAT_HOME, timeout=15, retries=2)
-        home_html = raw.decode("utf-8", errors="replace")
-        pat = re.compile(
-            r'<a href="(/release/[^"]+)">'
-            r'<img src="([^"]+)"[^>]*>.*?'
-            r'<p class="movie-name name">([^<]{3,120})</p>', re.S | re.I)
-        seen = set()
-        for m in pat.finditer(home_html):
-            slug_path, img_src, t = (m.group(1),
-                                     m.group(2), html.unescape(m.group(3)))
-            if slug_path in seen:
-                continue
-            seen.add(slug_path)
-            # direct poster from homepage (no TMDB needed)
-            poster_url = urllib.parse.urljoin(GOAT_HOME, img_src)
-            # "COCKTAIL 2 – കോക്ക്ടെയ്ൽ 2 (2026)" -> en/ml/year
-            tm = re.search(r"\((19|20)\d{2}\)\s*$", t)
-            year = tm.group(0).strip("()") if tm else None
-            t2 = t[:tm.start()].strip() if tm else t.strip()
-            parts = [p.strip() for p in re.split(r"\s+[–-]\s+", t2, 1)]
-            en = parts[0].title() if parts else t2
-            ml = parts[1] if len(parts) > 1 else None
-            slug = slug_path.strip("/").split("/")[-1]
-            enrich = _tmdb_search_enrich(en, year)
-            it = {
-                "card_id": f"smcs:new:goat:{slug}",
-                "name": en,
-                "name_ml": ml,
-                "media": (enrich or {}).get("media", "movie"),
-                "poster_path": (enrich or {}).get("poster_path"),
-                "poster_url": poster_url,  # direct from homepage
-                "backdrop_path": (enrich or {}).get("backdrop_path"),
-                "overview": (enrich or {}).get("overview") or "",
-                "year": year,
-                "genre_ids": (enrich or {}).get("genre_ids") or [],
-                "sources": ["goat"],
-                "post_urls": {"goat": urllib.parse.urljoin(GOAT_HOME,
-                                                           slug_path)},
-            }
-            if enrich and enrich.get("imdb_id"):
-                it["card_id"] = enrich["imdb_id"]
-            items.append(it)
-            if len(items) >= 15:
-                break
-    except Exception:
-        pass
-    with _newrel_lock:
-        _newrel_cache["goat"] = {"at": time.time(), "items": items}
-    return items
-
-
-def _live_mm_releases():
-    """Latest Movie Mirror releases from WP API (live, newest first)."""
-    with _newrel_lock:
-        e = _newrel_cache.get("mm")
-        now = time.time()
-        if e and now - e["at"] < NEWREL_TTL:
-            return e["items"]
-    items = []
-    try:
-        data = _api_fetch_json(
-            f"{MM_WP_API}/posts?per_page=15&orderby=date&order=desc"
-            f"&_fields=id,link,title,date", timeout=15)
-        for p in data:
-            title_raw = html.unescape(
-                (p.get("title") or {}).get("rendered", ""))
-            link = p.get("link", "")
-            # "നോബഡി 2 ( Nobody 2 ) 2025" -> en/ml/year
-            ym = re.search(r"\b(19|20)\d{2}\b", title_raw)
-            year = ym.group(0) if ym else None
-            # prefer english in parens
-            pm = re.search(r"\(\s*([^)]+?)\s*\)", title_raw)
-            en = pm.group(1).strip() if pm else title_raw
-            en = re.sub(r"\b(19|20)\d{2}\b", "", en).strip(" ()")
-            ml = None
-            if pm:
-                ml = title_raw[:pm.start()].strip(" ()")
-            slug = link.rstrip("/").split("/")[-1]
-            if not en:
-                continue
-            enrich = _tmdb_search_enrich(en, year)
-            it = {
-                "card_id": f"smcs:new:mm:{slug}",
-                "name": en,
-                "name_ml": ml,
-                "media": (enrich or {}).get("media", "movie"),
-                "poster_path": (enrich or {}).get("poster_path"),
-                "backdrop_path": (enrich or {}).get("backdrop_path"),
-                "overview": (enrich or {}).get("overview") or "",
-                "year": year,
-                "genre_ids": (enrich or {}).get("genre_ids") or [],
-                "sources": ["mm"],
-                "post_urls": {"mm": link},
-            }
-            if enrich and enrich.get("imdb_id"):
-                it["card_id"] = enrich["imdb_id"]
-            items.append(it)
-    except Exception:
-        pass
-    with _newrel_lock:
-        _newrel_cache["mm"] = {"at": time.time(), "items": items}
-    return items
-
-
-def smc_metas(cid):
-    if cid in _mega_metas:
-        return _mega_metas[cid]
-    cat = next(c for c in _all_cat_defs() if c["id"] == cid)
-    metas = [_to_meta(it) for it in _items_for_cat(cat)]
-    metas = [m for m in metas if m.get("poster")]
-    _mega_metas[cid] = metas
-    return metas
-
-
-def tile_metas():
-    base = request.url_root.rstrip("/")
-    metas = []
-    for t in TILES:
-        tid = f"smcs:tile_{t['tile']}"
-        metas.append({
-            "id": tid,
-            "type": "movie",
-            "name": t["name"],
-            "poster": f"{base}/static/tiles/{t['file']}",
-            "background": f"{base}/static/tiles/{t['file']}",
-            "description": t["desc"],
-        })
-    return metas
-
-
-def mega_by_id():
-    global _mega_by_id
-    if _mega_by_id is None:
-        idx = {}
-        for it in all_items():
-            idx[it["card_id"]] = it
-            if it.get("imdb_id"):
-                idx[it["imdb_id"]] = it
-            if it.get("tmdb_id"):
-                idx[f"tmdb:{it['tmdb_id']}"] = it
-        _mega_by_id = idx
-    return _mega_by_id
-
-
-def _top_lines(items, n=8):
-    return "\n".join(
-        f"\u2022 {it['name']}"
-        + (f" / {it['name_ml']}" if it.get("name_ml") else "")
-        + (f" ({it['year']})" if it.get("year") else "")
-        for it in items[:n])
-
 
 # ---------------- subtitle data ----------------
 _mm_data = None
@@ -907,9 +165,8 @@ def _pick_series(items, season):
 # ---------------- subtitle fetch engine ----------------
 SUB_CACHE_DIR = os.path.join(BASE_DIR, "sub_cache")
 SUB_INDEX = os.path.join(SUB_CACHE_DIR, "index.json")
-EP_CACHE = os.path.join(SUB_CACHE_DIR, "episodes.json")
 SUB_TTL = 7 * 24 * 3600   # subtitle bytes rarely change
-MISS_TTL = 6 * 3600       # remember misses for 6h
+MISS_TTL = 45 * 60        # remember misses for 45min (so fixes show faster)
 SITE_GAP = 1.5            # politeness gap between site fetches
 
 os.makedirs(SUB_CACHE_DIR, exist_ok=True)
@@ -1447,131 +704,502 @@ def debug_msone(rid):
     return jsonify(info)
 
 
-# ---------------- addon 1: SM MAL CAT+SUB ----------------
+
+
+# ---------------- routes ----------------
 @app.route("/manifest.json")
 def manifest():
-    base = request.url_root.rstrip("/")
     return jsonify({
-        "id": "com.smmal.catsub.v2",
-        "version": "2.0.5",
-        "name": "SM MAL CATALOG v2",
-        "description": "Malayalam movies, series & documentaries catalog "
-                       "(Msone + Movie Mirror + Team GOAT combined) WITH "
-                       "Malayalam subtitles from all three sites. Live search: "
-                       "new subtitles appear automatically.",
-        "logo": f"{base}/static/logo.png",
+        "id": "com.smmal.subtitles",
+        "version": "1.2.4",
+        "name": "SM MAL SUB",
+        "description": "Malayalam subtitles from Movie Mirror + Team GOAT "
+                       "+ Msone (official addon). Live search: new subtitles "
+                       "appear automatically. Subtitles only — video "
+                       "comes from your own sources.",
+        "resources": ["subtitles"],
         "types": ["movie", "series"],
-        "idPrefixes": ["tt", "tmdb:", "smcs:"],
-        "resources": ["catalog", "meta"],
-        "catalogs": [
-            {"type": c["type"], "id": c["id"], "name": c["name"],
-             "extra": [{"name": "skip", "isRequired": False},
-                       {"name": "search", "isRequired": False}]}
-            for c in smc_catalog_defs()
-        ],
+        "idPrefixes": ["tt"],
+        "catalogs": [],
     })
 
 
-@app.route("/catalog/<ctype>/<cid>.json")
-@app.route("/catalog/<ctype>/<cid>/skip=<int:skip>.json")
-@app.route("/catalog/<ctype>/<cid>/search=<path:search>.json")
-def catalog(ctype, cid, skip=0, search=None):
-    if search is None:
-        search = request.args.get("search")
-    cat = next((c for c in _all_cat_defs() if c["id"] == cid), None)
-    if not cat:
-        return jsonify({"metas": []}), 404
-    try:
-        metas = smc_metas(cid)
-        if search:
-            q = search.lower()
-            metas = [m for m in metas
-                     if q in (m.get("name") or "").lower()]
-    except Exception as e:
-        return jsonify({"metas": [], "error": str(e)}), 502
-    if "skip" not in request.view_args:
-        try:
-            skip = int(request.args.get("skip", "0"))
-        except ValueError:
-            skip = 0
-    return jsonify({"metas": metas[skip:skip + 100]})
-
-
-@app.route("/meta/<mtype>/<mid>.json")
-def meta(mtype, mid):
-    base = request.url_root.rstrip("/")
-    for t in TILES:
-        if mid == f"smcs:tile_{t['tile']}":
-            if t["tile"] == "movies":
-                items = [it for it in all_items() if it["media"] == "movie"]
-            elif t["tile"] == "series":
-                items = [it for it in all_items() if it["media"] == "tv"]
-            else:
-                items = [it for it in all_items()
-                         if it["media"] == "movie" and is_doc(it)]
-            return jsonify({"meta": {
-                "id": mid,
-                "type": "movie",
-                "name": t["name"],
-                "poster": f"{base}/static/tiles/{t['file']}",
-                "background": f"{base}/static/tiles/{t['file']}",
-                "description": (f"{t['desc']}\n\n{len(items)} titles."
-                                f"\n\nNewest:\n{_top_lines(items)}").strip(),
-            }})
-    cat = next((c for c in _all_cat_defs() if c["id"] == mid), None)
-    if cat:
-        items = _items_for_cat(cat)
-        first = items[0] if items else None
-        meta = {
-            "id": cat["id"],
-            "type": cat["type"],
-            "name": cat["name"],
-            "poster": (f"{POSTER}{first['poster_path']}"
-                       if first and first.get("poster_path") else None),
-            "background": (f"{BG}{first['backdrop_path']}"
-                           if first and first.get("backdrop_path") else None),
-            "description": (f"{len(items)} titles in {cat['name']}."
-                            f"\n\nTop titles:\n{_top_lines(items)}").strip(),
-        }
-        return jsonify({"meta": {k: v for k, v in meta.items() if v}})
-    it = mega_by_id().get(mid)
-    if not it:
-        # look up live new-release items (msone/goat/mm rows) by any id
-        for fn in (_live_msone_releases, _live_goat_releases,
-                  _live_mm_releases):
-            try:
-                for cand in fn():
-                    if cand.get("card_id") == mid:
-                        it = cand
-                        break
-                if it:
-                    break
-            except Exception:
-                pass
-    if not it:
-        return jsonify({"meta": {}})
-    meta = _to_meta(it, with_videos=True)
-    meta = {k: v for k, v in meta.items() if v}
-    return jsonify({"meta": meta})
+# IMDb ID overrides for titles missing them (TMDB ID -> IMDb ID)
+IMDB_OVERRIDES = {
+    "14": "tt0169547",
+    "38": "tt0338013",
+    "70": "tt0405159",
+    "161": "tt0240772",
+    "274": "tt0102926",
+    "300": "tt0354899",
+    "322": "tt0327056",
+    "329": "tt0107290",
+    "335": "tt0064116",
+    "380": "tt0095953",
+    "411": "tt0363771",
+    "445": "tt0387898",
+    "453": "tt0268978",
+    "564": "tt0120616",
+    "601": "tt0083866",
+    "643": "tt0015648",
+    "665": "tt0052618",
+    "692": "tt0069089",
+    "714": "tt0120347",
+    "745": "tt0167404",
+    "769": "tt0099685",
+    "790": "tt0094525",
+    "832": "tt0022100",
+    "839": "tt0067023",
+    "862": "tt0114709",
+    "985": "tt0074486",
+    "1044": "tt0795176",    # Planet Earth (2006)
+    "1255": "tt0468492",
+    "1396": "tt0903747",
+    "1398": "tt0079944",
+    "1399": "tt0944947",
+    "1402": "tt1520211",
+    "1411": "tt1839578",
+    "1429": "tt2560140",
+    "1430": "tt0081846",    # Cosmos: A Personal Voyage (1980)
+    "1487": "tt0167190",
+    "1585": "tt0038650",
+    "1637": "tt0111257",
+    "1705": "tt1119644",
+    "1726": "tt0371746",
+    "1771": "tt0458339",
+    "1902": "tt0125659",
+    "2016": "tt0444182",
+    "2080": "tt0458525",
+    "2251": "tt0250797",
+    "2288": "tt0455275",
+    "3763": "tt0058430",
+    "3782": "tt0044741",
+    "4327": "tt0096657",    # Mr. Bean (1990 series)
+    "4476": "tt0110322",
+    "4480": "tt0091288",
+    "4547": "tt0258000",
+    "4607": "tt0411008",
+    "4613": "tt0185906",
+    "5185": "tt0066249",
+    "5511": "tt0062229",
+    "5595": "tt1016301",
+    "5925": "tt0057115",
+    "7737": "tt0432021",
+    "7973": "tt0825236",
+    "7979": "tt0419887",
+    "8681": "tt0936501",
+    "8740": "tt0096163",
+    "8848": "tt0200465",
+    "9357": "tt0265459",
+    "9367": "tt0104815",
+    "9477": "tt0349683",
+    "9509": "tt0328107",
+    "9662": "tt0286244",
+    "9806": "tt0317705",
+    "10138": "tt1228705",
+    "10191": "tt0892769",
+    "10226": "tt0338095",
+    "10451": "tt0111797",
+    "10757": "tt0248126",
+    "10974": "tt0091431",
+    "10999": "tt0088944",
+    "11000": "tt0115685",
+    "11036": "tt0332280",
+    "11072": "tt0071230",
+    "11253": "tt0411477",
+    "11518": "tt0213890",
+    "11661": "tt0424205",
+    "11830": "tt0092048",
+    "11906": "tt0076786",
+    "12222": "tt0451079",
+    "12259": "tt0073707",
+    "12539": "tt0395057",
+    "13123": "tt1241195",
+    "13528": "tt0036855",
+    "13807": "tt0796212",
+    "14163": "tt0871510",
+    "14752": "tt0292490",
+    "15003": "tt1183252",
+    "17264": "tt0078872",
+    "17431": "tt1182345",
+    "18311": "tt0101258",
+    "18384": "tt1360795",
+    "18526": "tt1233461",
+    "19885": "tt1475582",
+    "20034": "tt1093369",
+    "20662": "tt0955308",
+    "21348": "tt0181627",
+    "21575": "tt1235166",
+    "22238": "tt0423310",
+    "22954": "tt1057500",
+    "23945": "tt0115836",
+    "25597": "tt1002567",
+    "26610": "tt0119375",
+    "29917": "tt1258197",
+    "30244": "tt0770214",
+    "34105": "tt0159145",
+    "35010": "tt1119199",
+    "36204": "tt0995740",
+    "36657": "tt0120903",
+    "36668": "tt0376994",
+    "38000": "tt1233473",
+    "38011": "tt0475557",
+    "38810": "tt1379182",
+    "40842": "tt0079638",
+    "41727": "tt2017109",
+    "42528": "tt0066530",
+    "42589": "tt2176165",
+    "42699": "tt0092337",
+    "43539": "tt1458175",
+    "43947": "tt1242432",
+    "43969": "tt0363303",
+    "44069": "tt0260332",
+    "44217": "tt2306299",
+    "45016": "tt1278016",
+    "46648": "tt2356777",
+    "48508": "tt1287875",
+    "49538": "tt1270798",
+    "50162": "tt0225009",
+    "50938": "tt1725995",
+    "54186": "tt1590089",
+    "60059": "tt3032476",
+    "60574": "tt2442560",
+    "60625": "tt2861424",
+    "60948": "tt3148266",
+    "61202": "tt1562872",
+    "61222": "tt3398228",
+    "61461": "tt0034493",
+    "61664": "tt2431438",
+    "61670": "tt4284216",
+    "62439": "tt1848926",
+    "62560": "tt4158110",
+    "63174": "tt4052886",
+    "63210": "tt0453115",
+    "63247": "tt0475784",
+    "63333": "tt4179452",
+    "63926": "tt4508902",
+    "64684": "tt3581932",
+    "64840": "tt5332206",
+    "65143": "tt4925000",
+    "65754": "tt1568346",
+    "66732": "tt4574334",
+    "66816": "tt0038674",
+    "66980": "tt4378376",
+    "67070": "tt5687612",
+    "67744": "tt5290382",
+    "68595": "tt5491994",    # Planet Earth II (2016)
+    "68721": "tt1300854",
+    "69087": "tt6212854",
+    "69740": "tt5071412",
+    "70523": "tt5753856",
+    "70593": "tt6611916",
+    "70649": "tt6256484",
+    "71411": "tt6692188",
+    "71912": "tt5180504",
+    "71914": "tt7462410",
+    "72334": "tt1222815",
+    "72750": "tt7016936",
+    "72844": "tt6763664",
+    "72984": "tt0093144",
+    "73532": "tt1508675",
+    "73544": "tt5743796",
+    "73613": "tt6467482",
+    "73780": "tt7278424",
+    "74064": "tt7418578",
+    "74430": "tt6118426",
+    "74447": "tt5834256",
+    "74577": "tt6257970",
+    "75006": "tt1312171",
+    "75200": "tt6883044",
+    "76170": "tt1430132",
+    "76459": "tt1368439",
+    "76479": "tt1190634",
+    "76659": "tt6466208",
+    "77338": "tt1675434",
+    "77461": "tt1772424",
+    "77716": "tt1650056",
+    "79240": "tt8362852",
+    "79347": "tt7755494",
+    "79352": "tt6077448",
+    "79407": "tt8236544",
+    "79788": "tt7049682",
+    "80307": "tt7493974",
+    "80707": "tt5909930",
+    "80752": "tt7949218",
+    "81049": "tt8463714",
+    "81166": "tt8595766",
+    "81355": "tt7137906",
+    "82624": "tt1787127",
+    "82856": "tt8111088",
+    "82953": "tt9130692",    # Dynasties (2018)
+    "83100": "tt9458304",
+    "83221": "tt0413358",
+    "83634": "tt8236556",
+    "84105": "tt6473300",
+    "84773": "tt7631058",
+    "84958": "tt9140554",
+    "85021": "tt7661390",
+    "85271": "tt9140560",
+    "85720": "tt2403776",
+    "86831": "tt9561862",
+    "86850": "tt9139220",
+    "87108": "tt7366338",
+    "87185": "tt9772814",
+    "87313": "tt12879522",
+    "87508": "tt9398466",
+    "87739": "tt10048342",
+    "88055": "tt8068860",
+    "88463": "tt8750956",
+    "88640": "tt3829868",
+    "88803": "tt10233448",
+    "89059": "tt0016804",
+    "89113": "tt9432978",
+    "89545": "tt9337588",
+    "89604": "tt10192576",
+    "90228": "tt10466872",
+    "90260": "tt9446688",
+    "90447": "tt10220588",
+    "90634": "tt0222024",
+    "90660": "tt9058134",
+    "90802": "tt1751634",
+    "90966": "tt10530900",
+    "91363": "tt10168312",
+    "91557": "tt9251798",
+    "92911": "tt10656392",
+    "93241": "tt10905902",
+    "93352": "tt9544034",
+    "93405": "tt10919420",
+    "93705": "tt10485750",
+    "93740": "tt0804484",
+    "94605": "tt11126994",
+    "94796": "tt10850932",
+    "94997": "tt11198330",
+    "95171": "tt10324164",    # Prehistoric Planet (2022)
+    "96041": "tt11557904",
+    "96129": "tt11318602",
+    "96462": "tt12451520",
+    "96648": "tt11612120",
+    "96677": "tt2531336",
+    "97365": "tt2053425",
+    "98187": "tt10893694",
+    "98827": "tt12516712",
+    "99112": "tt11505790",
+    "99478": "tt11953100",
+    "99479": "tt12015466",
+    "99494": "tt11691684",
+    "99966": "tt14169960",
+    "100088": "tt3581920",
+    "100624": "tt8430234",
+    "101352": "tt12004706",
+    "102899": "tt0478970",
+    "103759": "tt10651790",
+    "103768": "tt12809988",
+    "104811": "tt11827694",
+    "106651": "tt12235718",
+    "108285": "tt12937604",
+    "108681": "tt7441984",
+    "110249": "tt12701270",
+    "110316": "tt10795658",
+    "110356": "tt12940504",
+    "110529": "tt18214248",
+    "110533": "tt13400300",
+    "111110": "tt11737520",
+    "111188": "tt12392504",
+    "112119": "tt12874950",
+    "112836": "tt13696452",
+    "113388": "tt2328503",
+    "113622": "tt12477912",
+    "113988": "tt13207736",
+    "114410": "tt13616990",
+    "115036": "tt13668894",
+    "116135": "tt11311302",
+    "117376": "tt13433812",
+    "117465": "tt13911284",
+    "119051": "tt13443470",
+    "121856": "tt2094766",
+    "122917": "tt2310332",
+    "123349": "tt14460684",
+    "123542": "tt14976292",
+    "124364": "tt9813792",
+    "126308": "tt2788316",
+    "126485": "tt24640580",
+    "126829": "tt14160660",
+    "127585": "tt1877832",
+    "127862": "tt14820482",
+    "128206": "tt2181831",
+    "129043": "tt14932842",
+    "132316": "tt2176013",
+    "132752": "tt14473896",
+    "132846": "tt2181503",
+    "133359": "tt14167390",
+    "133678": "tt21875462",
+    "135397": "tt0369610",
+    "137872": "tt18970038",
+    "139582": "tt2292625",
+    "152584": "tt2278871",
+    "152603": "tt1714915",
+    "154326": "tt1710565",
+    "157239": "tt13623632",
+    "181886": "tt2316411",
+    "186110": "tt0270321",
+    "197588": "tt13640670",
+    "198102": "tt19854762",
+    "199818": "tt2236054",
+    "200709": "tt20234568",
+    "206586": "tt9859436",
+    "207332": "tt17069148",
+    "210704": "tt20600022",
+    "211747": "tt14166656",
+    "218230": "tt26225038",
+    "219543": "tt26545355",
+    "219651": "tt26653824",
+    "221079": "tt26862142",
+    "224372": "tt27497448",
+    "225171": "tt22202452",
+    "235260": "tt3210686",
+    "239798": "tt0096747",
+    "242582": "tt2872718",
+    "249042": "tt31806037",
+    "251577": "tt3089778",
+    "259316": "tt3183660",
+    "263115": "tt3315342",
+    "265662": "tt0944961",
+    "270476": "tt33332385",
+    "271110": "tt3498820",
+    "273248": "tt3460252",
+    "278068": "tt0246833",
+    "282058": "tt3837820",
+    "283367": "tt35630036",
+    "293646": "tt2006295",
+    "293768": "tt1458169",
+    "296206": "tt42127457",
+    "299534": "tt4154796",
+    "299537": "tt4154664",
+    "313298": "tt32493765",
+    "315635": "tt2250912",
+    "323517": "tt3678782",
+    "324552": "tt4425200",
+    "338952": "tt4123430",
+    "341182": "tt4313646",
+    "347752": "tt2929652",
+    "353464": "tt4934950",
+    "363088": "tt5095030",
+    "370870": "tt5121000",
+    "372058": "tt5311514",
+    "381284": "tt4846340",
+    "382217": "tt6273736",
+    "388333": "tt4169250",
+    "392044": "tt3402236",
+    "392572": "tt5165344",
+    "393841": "tt5824826",
+    "398924": "tt5091612",
+    "399360": "tt4244998",
+    "399579": "tt0437086",
+    "400617": "tt5776858",
+    "401545": "tt4964788",
+    "403867": "tt5460276",
+    "404579": "tt5465370",
+    "407436": "tt2388771",
+    "418235": "tt4807830",
+    "418472": "tt6628102",
+    "422566": "tt6210808",
+    "426426": "tt6155172",
+    "428493": "tt5635086",
+    "432836": "tt5729348",
+    "433327": "tt6054758",
+    "435577": "tt3300980",
+    "438070": "tt6814252",
+    "438857": "tt6315750",
+    "441889": "tt6108090",
+    "444431": "tt6896536",
+    "446894": "tt6182908",
+    "448491": "tt6083230",
+    "451955": "tt6367558",
+    "451997": "tt6777370",
+    "453276": "tt5923026",
+    "453755": "tt6820256",
+    "458156": "tt6146586",
+    "458723": "tt6857112",
+    "460713": "tt6580564",
+    "461126": "tt7392212",
+    "462718": "tt8176054",
+    "468205": "tt6207878",
+    "469651": "tt7213936",
+    "479034": "tt7080138",
+    "484423": "tt6613470",
+    "486947": "tt6742252",
+    "490132": "tt6966692",
+    "491629": "tt7098658",
+    "493655": "tt7763020",
+    "494680": "tt6940696",
+    "496527": "tt7700730",
+    "499028": "tt8092252",
+    "500723": "tt7797658",
+    "512098": "tt6972140",
+    "513434": "tt7914416",
+    "517814": "tt8267604",
+    "517839": "tt5501104",
+    "525162": "tt6982254",
+    "529216": "tt6908274",
+    "529569": "tt8865562",
+    "530254": "tt8574252",
+    "533991": "tt8108202",
+    "534780": "tt8108198",
+    "536475": "tt8043456",
+    "537996": "tt6412452",
+    "538858": "tt8239946",
+    "540189": "tt7758160",
+    "540468": "tt8590896",
+    "541487": "tt8333978",
+    "544627": "tt8119680",
+    "546230": "tt9063106",
+    "547654": "tt7725596",
+    "554600": "tt8291224",
+    "555605": "tt7497366",
+    "567973": "tt9412268",
+    "571610": "tt8737614",
+    "581361": "tt8130968",
+    "588708": "tt9903716",
+    "591278": "tt10090796",
+    "592898": "tt8948790",
+    "594028": "tt7109900",
+    "610482": "tt10214826",
+    "1032863": "tt22526100",
+    "1339654": "tt33575372",
+    "1386315": "tt34564059",
+}
 
 
 def _parse_rid(vtype, rid):
     """Returns (imdb_id, season, episode) or None."""
     rid = urllib.parse.unquote(rid)
     parts = rid.split(":")
-    imdb_id = parts[0]
+    # Rejoin tmdb: prefix which split() broke apart
+    if parts[0] == "tmdb" and len(parts) >= 2:
+        imdb_id = "tmdb:" + parts[1]
+        rest = parts[2:]
+    else:
+        imdb_id = parts[0]
+        rest = parts[1:]
+    # Handle TMDB IDs via override mapping
+    if imdb_id.startswith("tmdb:"):
+        tmdb_num = imdb_id[5:]
+        if tmdb_num in IMDB_OVERRIDES:
+            imdb_id = IMDB_OVERRIDES[tmdb_num]
+        else:
+            return None
     if not re.match(r"^tt\d+$", imdb_id):
         return None
     season = episode = None
-    if vtype == "series" and len(parts) >= 3:
+    if vtype == "series" and len(rest) >= 2:
         try:
-            season, episode = int(parts[1]), int(parts[2])
+            season, episode = int(rest[0]), int(rest[1])
         except ValueError:
             return None
     return imdb_id, season, episode
 
 
-def _subtitle_entries(prefix, vtype, rid):
+def _subtitle_entries(vtype, rid):
     parsed = _parse_rid(vtype, rid)
     if not parsed:
         return []
@@ -1628,7 +1256,7 @@ def _serve_srt(src, key):
 
 @app.route("/subtitles/<vtype>/<rid>.json")
 def subtitles(vtype, rid):
-    return jsonify({"subtitles": _subtitle_entries("", vtype, rid)})
+    return jsonify({"subtitles": _subtitle_entries(vtype, rid)})
 
 
 @app.route("/srt/<src>/<key>.srt")
@@ -1640,7 +1268,8 @@ def srt(src, key):
 def index():
     base = request.host_url.rstrip("/")
     return Response(
-        "<h2>SM MAL CAT+SUB by Nandu10 \u2705</h2>"
+        "<h2>SM MAL SUB by Nandu10 \u2705</h2>"
+        "<p>Malayalam subtitles from Msone + Movie Mirror + Team GOAT.</p>"
         "<p>Install in Stremio / Nuvio:<br>"
         f"<code>{base}/manifest.json</code></p>",
         mimetype="text/html")
