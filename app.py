@@ -239,6 +239,9 @@ IMDB_OVERRIDES = {
     1104232: "tt27458539", # Vigilante (2023 tv, Korean drama)
     564610: "tt0179106",  # Bikini Seasons (1993 movie)
     760774: "tt13097932", # One Life (2023 movie)
+    # --- Batch 4 (2026-10-08): from 12-title audit ---
+    473216: "tt4603640",  # The Silence (2015, Marathi film)
+    710859: "tt1041086",  # Goodbye Children Everywhere (BBC Timeshift S6E15)
 }
 
 # Name-based IMDb overrides for live rows where TMDB enrichment fails
@@ -1605,7 +1608,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.2.1",
+        "version": "2.2.2",
         "name": "SM MAL CATALOG v2",
         "description": "Malayalam movies, series & documentaries catalog "
                        "(Msone + Movie Mirror + Team GOAT combined) WITH "
