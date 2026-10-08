@@ -1630,7 +1630,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.3.0",
+        "version": "2.3.1",
         "name": "SM MAL CATALOG v2",
         "description": "Malayalam movies, series & documentaries catalog "
                        "(Msone + Movie Mirror + Team GOAT combined) WITH "
@@ -1831,6 +1831,7 @@ def sub_manifest():
         "types": ["movie", "series"],
         "idPrefixes": ["tt"],
         "catalogs": [],
+        "behaviorHints": {"configurable": False, "p2p": False},
     })
     resp.headers["Access-Control-Allow-Origin"] = "*"
     resp.headers["Access-Control-Allow-Headers"] = "*"
