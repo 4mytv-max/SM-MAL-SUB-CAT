@@ -1630,7 +1630,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.2.9",
+        "version": "2.3.0",
         "name": "SM MAL CATALOG v2",
         "description": "Malayalam movies, series & documentaries catalog "
                        "(Msone + Movie Mirror + Team GOAT combined) WITH "
@@ -1805,7 +1805,10 @@ def _serve_srt(src, key):
 
 @app.route("/subtitles/<vtype>/<rid>.json")
 def subtitles(vtype, rid):
-    return jsonify({"subtitles": _subtitle_entries("", vtype, rid)})
+    resp = jsonify({"subtitles": _subtitle_entries("", vtype, rid)})
+    resp.headers["Access-Control-Allow-Origin"] = "*"
+    resp.headers["Access-Control-Allow-Headers"] = "*"
+    return resp
 
 
 @app.route("/srt/<src>/<key>.srt")
@@ -1816,7 +1819,7 @@ def srt(src, key):
 # ---------------- /sub: standalone subtitle addon ----------------
 @app.route("/sub/manifest.json")
 def sub_manifest():
-    return jsonify({
+    resp = jsonify({
         "id": "com.smmal.subtitles",
         "version": "1.2.4",
         "name": "SM MAL SUB",
@@ -1829,11 +1832,17 @@ def sub_manifest():
         "idPrefixes": ["tt"],
         "catalogs": [],
     })
+    resp.headers["Access-Control-Allow-Origin"] = "*"
+    resp.headers["Access-Control-Allow-Headers"] = "*"
+    return resp
 
 
 @app.route("/sub/subtitles/<vtype>/<rid>.json")
 def sub_subtitles(vtype, rid):
-    return jsonify({"subtitles": _subtitle_entries("/sub", vtype, rid)})
+    resp = jsonify({"subtitles": _subtitle_entries("/sub", vtype, rid)})
+    resp.headers["Access-Control-Allow-Origin"] = "*"
+    resp.headers["Access-Control-Allow-Headers"] = "*"
+    return resp
 
 
 @app.route("/sub/srt/<src>/<key>.srt")
