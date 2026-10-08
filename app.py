@@ -1630,7 +1630,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.3.2",
+        "version": "2.3.3",
         "name": "SM MAL CATALOG v2",
         "description": "Malayalam movies, series & documentaries catalog "
                        "(Msone + Movie Mirror + Team GOAT combined) WITH "
@@ -1849,6 +1849,74 @@ def sub_subtitles(vtype, rid):
 @app.route("/sub/srt/<src>/<key>.srt")
 def sub_srt(src, key):
     return _serve_srt(src, key)
+
+
+# ---------------- /goatmm: GOAT+MM-only subtitle addon (TV) ----------------
+def _goatmm_entries(vtype, rid):
+    """Team GOAT + Movie Mirror subtitles only — no Msone, no official
+    pass-through. Separate addon id so TV apps treat it as a fresh addon."""
+    parsed = _parse_rid(vtype, rid)
+    if not parsed:
+        return []
+    imdb_id, season, _episode = parsed
+    base = request.url_root.rstrip("/")
+    out = []
+    idx = None
+    for src, label in (("mm", "Movie Mirror"), ("goat", "Team GOAT")):
+        if not _has_subtitle(src, imdb_id, season):
+            continue
+        key = _sub_key(src, rid)
+        # remember rid -> key so /goatmm/srt can resolve lazily on first hit
+        if idx is None:
+            idx = _sub_index_load()
+        if ("rid:" + key) not in idx:
+            idx["rid:" + key] = urllib.parse.unquote(rid)
+            _sub_index_save(idx)
+        out.append({
+            "id": f"gmsub:{src}:{rid}",
+            "url": f"{base}/goatmm/srt/{src}/{key}.srt",
+            "lang": "mal",
+            "label": f"Malayalam [{label}]",
+        })
+    return out
+
+
+@app.route("/goatmm/manifest.json")
+def goatmm_manifest():
+    resp = jsonify({
+        "id": "org.sm.goatmm.tv",
+        "version": "1.0.0",
+        "name": "GOAT MM SUB TV",
+        "description": "Malayalam subtitles from Team GOAT + Movie Mirror.",
+        "resources": ["subtitles"],
+        "types": ["movie", "series"],
+        "idPrefixes": ["tt"],
+        "catalogs": [],
+        "behaviorHints": {"configurable": False, "p2p": False},
+    })
+    resp.headers["Access-Control-Allow-Origin"] = "*"
+    resp.headers["Access-Control-Allow-Headers"] = "*"
+    return resp
+
+
+@app.route("/goatmm/subtitles/<vtype>/<rid>.json")
+def goatmm_subtitles(vtype, rid):
+    resp = jsonify({"subtitles": _goatmm_entries(vtype, rid)})
+    resp.headers["Access-Control-Allow-Origin"] = "*"
+    resp.headers["Access-Control-Allow-Headers"] = "*"
+    return resp
+
+
+@app.route("/goatmm/srt/<src>/<key>.srt")
+def goatmm_srt(src, key):
+    if src not in ("mm", "goat"):
+        return jsonify({"error": "not found"}), 404
+    resp = _serve_srt(src, key)
+    # _serve_srt may return a tuple (jsonify, 404) — only touch real Responses
+    if hasattr(resp, "headers"):
+        resp.headers["Access-Control-Allow-Origin"] = "*"
+        resp.headers["Access-Control-Allow-Headers"] = "*"
+    return resp
 
 
 @app.route("/")
