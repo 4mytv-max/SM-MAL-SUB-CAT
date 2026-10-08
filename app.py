@@ -1630,7 +1630,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.3.3",
+        "version": "2.3.4",
         "name": "SM MAL CATALOG v2",
         "description": "Malayalam movies, series & documentaries catalog "
                        "(Msone + Movie Mirror + Team GOAT combined) WITH "
@@ -1819,6 +1819,7 @@ def srt(src, key):
 # ---------------- /sub: standalone subtitle addon ----------------
 @app.route("/sub/manifest.json")
 def sub_manifest():
+    base = request.url_root.rstrip("/")
     resp = jsonify({
         "id": "org.sm.malsub.tv",
         "version": "1.2.4",
@@ -1827,6 +1828,7 @@ def sub_manifest():
                        "+ Msone (official addon). Live search: new subtitles "
                        "appear automatically. Subtitles only — video "
                        "comes from your own sources.",
+        "logo": f"{base}/static/logo.png",
         "resources": ["subtitles"],
         "types": ["movie", "series"],
         "idPrefixes": ["tt"],
@@ -1883,11 +1885,13 @@ def _goatmm_entries(vtype, rid):
 
 @app.route("/goatmm/manifest.json")
 def goatmm_manifest():
+    base = request.url_root.rstrip("/")
     resp = jsonify({
         "id": "org.sm.goatmm.tv",
         "version": "1.0.0",
         "name": "GOAT MM SUB TV",
         "description": "Malayalam subtitles from Team GOAT + Movie Mirror.",
+        "logo": f"{base}/static/logo.png",
         "resources": ["subtitles"],
         "types": ["movie", "series"],
         "idPrefixes": ["tt"],
