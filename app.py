@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 """
-SM MAL CAT+SUB by Nandu10 — standalone service.
+SM MAL MERGED by Nandu10 — single service.
 
-Catalog + meta + subtitles. Merges Msone + Movie Mirror + Team GOAT
-catalogs (same merged data as the MEGA addon) AND serves Malayalam
-subtitles from all three sites.
+Catalog + meta at root, Malayalam subtitles under /sub.
 
 Routes:
-  /manifest.json
+  /manifest.json                 -> SM MAL CATALOG v2 (catalog + meta)
   /catalog/<type>/<id>.json
   /meta/<type>/<id>.json
-  /subtitles/<type>/<id>.json
+  /sub/manifest.json             -> SM MAL SUB (subtitles)
+  /sub/subtitles/<type>/<id>.json
+  /sub/srt/<src>/<key>.srt
+  /subtitles/<type>/<id>.json    (legacy root subtitle routes, kept)
   /srt/<src>/<key>.srt
+  /debug/msone/<rid>
 """
 import html
 import io
@@ -1080,7 +1082,7 @@ SUB_CACHE_DIR = os.path.join(BASE_DIR, "sub_cache")
 SUB_INDEX = os.path.join(SUB_CACHE_DIR, "index.json")
 EP_CACHE = os.path.join(SUB_CACHE_DIR, "episodes.json")
 SUB_TTL = 7 * 24 * 3600   # subtitle bytes rarely change
-MISS_TTL = 6 * 3600       # remember misses for 6h
+MISS_TTL = 45 * 60        # remember misses for 45min (so fixes show faster)
 SITE_GAP = 1.5            # politeness gap between site fetches
 
 os.makedirs(SUB_CACHE_DIR, exist_ok=True)
@@ -1624,7 +1626,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.2.5",
+        "version": "2.2.6",
         "name": "SM MAL CATALOG v2",
         "description": "Malayalam movies, series & documentaries catalog "
                        "(Msone + Movie Mirror + Team GOAT combined) WITH "
@@ -1762,7 +1764,7 @@ def _subtitle_entries(prefix, vtype, rid):
             _sub_index_save(idx)
         out.append({
             "id": f"smsub:{src}:{rid}",
-            "url": f"{base}/srt/{src}/{key}.srt",
+            "url": f"{base}{prefix}/srt/{src}/{key}.srt",
             "lang": "mal",
         })
     # Official Msone addon (pass-through) — covers Msone-only titles
@@ -1807,13 +1809,43 @@ def srt(src, key):
     return _serve_srt(src, key)
 
 
+# ---------------- /sub: standalone subtitle addon ----------------
+@app.route("/sub/manifest.json")
+def sub_manifest():
+    return jsonify({
+        "id": "com.smmal.subtitles",
+        "version": "1.2.4",
+        "name": "SM MAL SUB",
+        "description": "Malayalam subtitles from Movie Mirror + Team GOAT "
+                       "+ Msone (official addon). Live search: new subtitles "
+                       "appear automatically. Subtitles only — video "
+                       "comes from your own sources.",
+        "resources": ["subtitles"],
+        "types": ["movie", "series"],
+        "idPrefixes": ["tt"],
+        "catalogs": [],
+    })
+
+
+@app.route("/sub/subtitles/<vtype>/<rid>.json")
+def sub_subtitles(vtype, rid):
+    return jsonify({"subtitles": _subtitle_entries("/sub", vtype, rid)})
+
+
+@app.route("/sub/srt/<src>/<key>.srt")
+def sub_srt(src, key):
+    return _serve_srt(src, key)
+
+
 @app.route("/")
 def index():
     base = request.host_url.rstrip("/")
     return Response(
-        "<h2>SM MAL CAT+SUB by Nandu10 \u2705</h2>"
-        "<p>Install in Stremio / Nuvio:<br>"
-        f"<code>{base}/manifest.json</code></p>",
+        "<h2>SM MAL MERGED by Nandu10 \u2705</h2>"
+        "<p>Catalog addon (Stremio / Nuvio):<br>"
+        f"<code>{base}/manifest.json</code></p>"
+        "<p>Subtitle addon (Stremio / Nuvio):<br>"
+        f"<code>{base}/sub/manifest.json</code></p>",
         mimetype="text/html")
 
 
