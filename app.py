@@ -1630,7 +1630,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.3.9",
+        "version": "2.4.0",
         "name": "SM MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
@@ -1956,6 +1956,56 @@ def index():
         "<p>Subtitle addon (Stremio / Nuvio):<br>"
         f"<code>{base}/sub/manifest.json</code></p>",
         mimetype="text/html")
+
+
+# Canary test: returns hard-coded subtitle instantly (<100ms)
+# If TV shows this, problem is timing. If not, problem is format/path.
+@app.route("/canary/subtitles/<vtype>/<rid>.json")
+def canary_subtitles(vtype, rid):
+    base = request.url_root.rstrip("/")
+    resp = jsonify({"subtitles": [{
+        "id": "canary-test",
+        "url": f"{base}/canary/test.srt",
+        "lang": "mal",
+    }]})
+    resp.headers["Access-Control-Allow-Origin"] = "*"
+    return resp
+
+
+@app.route("/canary/test.srt")
+def canary_srt():
+    srt = "1\n00:00:01,000 --> 00:00:05,000\nCanary test subtitle\n"
+    resp = Response(srt, mimetype="text/plain; charset=utf-8")
+    resp.headers["Access-Control-Allow-Origin"] = "*"
+    return resp
+
+
+@app.route("/canary/manifest.json")
+def canary_manifest():
+    base = request.url_root.rstrip("/")
+    resp = jsonify({
+        "id": "org.sm.canary",
+        "version": "1.0.0",
+        "name": "Canary Test",
+        "description": "Speed test addon",
+        "resources": ["subtitles"],
+        "types": ["movie", "series"],
+        "idPrefixes": ["tt"],
+        "catalogs": [],
+        "behaviorHints": {"configurable": False, "p2p": False},
+    })
+    resp.headers["Access-Control-Allow-Origin"] = "*"
+    return resp
+
+
+# Timeout test: artificial delays to find TV's timeout threshold
+@app.route("/delay/<int:secs>/subtitles/<vtype>/<rid>.json")
+def delay_subtitles(secs, vtype, rid):
+    import time
+    time.sleep(min(secs, 10))
+    resp = jsonify({"subtitles": []})
+    resp.headers["Access-Control-Allow-Origin"] = "*"
+    return resp
 
 
 if __name__ == "__main__":
