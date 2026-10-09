@@ -1630,7 +1630,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.3.8",
+        "version": "2.3.9",
         "name": "SM MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
@@ -1814,9 +1814,14 @@ def _serve_srt(src, key):
 
 @app.route("/subtitles/<vtype>/<rid>.json")
 def subtitles(vtype, rid):
+    import time
+    start = time.time()
+    ua = request.headers.get("User-Agent", "?")[:80]
+    print(f"[SUB] {vtype}/{rid} UA:{ua}", flush=True)
     resp = jsonify({"subtitles": _subtitle_entries("", vtype, rid)})
     resp.headers["Access-Control-Allow-Origin"] = "*"
     resp.headers["Access-Control-Allow-Headers"] = "*"
+    print(f"[SUB] done in {time.time()-start:.2f}s", flush=True)
     return resp
 
 
@@ -1850,9 +1855,14 @@ def sub_manifest():
 
 @app.route("/sub/subtitles/<vtype>/<rid>.json")
 def sub_subtitles(vtype, rid):
+    import time
+    start = time.time()
+    ua = request.headers.get("User-Agent", "?")[:80]
+    print(f"[SUB] /sub {vtype}/{rid} UA:{ua}", flush=True)
     resp = jsonify({"subtitles": _subtitle_entries("/sub", vtype, rid)})
     resp.headers["Access-Control-Allow-Origin"] = "*"
     resp.headers["Access-Control-Allow-Headers"] = "*"
+    print(f"[SUB] /sub done in {time.time()-start:.2f}s", flush=True)
     return resp
 
 
