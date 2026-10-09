@@ -1766,8 +1766,15 @@ def _subtitle_entries(prefix, vtype, rid):
         if ("rid:" + key) not in idx:
             idx["rid:" + key] = urllib.parse.unquote(rid)
             _sub_index_save(idx)
+        # Provide BOTH lang formats: "mal" (standard) and "Malayalam (Label)" (descriptive)
+        # TV apps may expect either format
         out.append({
-            "id": f"smsub:{src}:{rid}",
+            "id": f"smsub:{src}:{rid}:mal",
+            "url": f"{base}{prefix}/srt/{src}/{key}.srt",
+            "lang": "mal",
+        })
+        out.append({
+            "id": f"smsub:{src}:{rid}:desc",
             "url": f"{base}{prefix}/srt/{src}/{key}.srt",
             "lang": f"Malayalam ({_label})",
         })
@@ -1875,6 +1882,12 @@ def _goatmm_entries(vtype, rid):
             _sub_index_save(idx)
         out.append({
             "id": f"gmsub:{src}:{rid}",
+            "url": f"{base}/goatmm/srt/{src}/{key}.srt",
+            "lang": "mal",
+            "label": f"Malayalam [{label}]",
+        })
+        out.append({
+            "id": f"gmsub:{src}:{rid}:desc",
             "url": f"{base}/goatmm/srt/{src}/{key}.srt",
             "lang": f"Malayalam ({label})",
             "label": f"Malayalam [{label}]",
