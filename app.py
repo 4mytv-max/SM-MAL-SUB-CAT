@@ -1630,7 +1630,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.3.7",
+        "version": "2.3.8",
         "name": "SM MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
@@ -1780,7 +1780,9 @@ def _subtitle_entries(prefix, vtype, rid):
         })
     # Official Msone addon (pass-through) — covers Msone-only titles
     # that Cloudflare blocks us from fetching directly.
-    out.extend(_msone_official_entries(vtype, rid))
+    # Only call if no local subtitles found (saves HTTP request time)
+    if not out:
+        out.extend(_msone_official_entries(vtype, rid))
     return out
 
 
