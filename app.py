@@ -1630,7 +1630,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.0",
+        "version": "2.4.1",
         "name": "SM MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
@@ -1766,17 +1766,11 @@ def _subtitle_entries(prefix, vtype, rid):
         if ("rid:" + key) not in idx:
             idx["rid:" + key] = urllib.parse.unquote(rid)
             _sub_index_save(idx)
-        # Provide BOTH lang formats: "mal" (standard) and "Malayalam (Label)" (descriptive)
-        # TV apps may expect either format
+        # Single entry with standard "mal" lang (like official Msone)
         out.append({
-            "id": f"smsub:{src}:{rid}:mal",
+            "id": f"smsub:{src}:{rid}",
             "url": f"{base}{prefix}/srt/{src}/{key}.srt",
             "lang": "mal",
-        })
-        out.append({
-            "id": f"smsub:{src}:{rid}:desc",
-            "url": f"{base}{prefix}/srt/{src}/{key}.srt",
-            "lang": f"Malayalam ({_label})",
         })
     # Official Msone addon (pass-through) — covers Msone-only titles
     # that Cloudflare blocks us from fetching directly.
@@ -1896,12 +1890,6 @@ def _goatmm_entries(vtype, rid):
             "id": f"gmsub:{src}:{rid}",
             "url": f"{base}/goatmm/srt/{src}/{key}.srt",
             "lang": "mal",
-            "label": f"Malayalam [{label}]",
-        })
-        out.append({
-            "id": f"gmsub:{src}:{rid}:desc",
-            "url": f"{base}/goatmm/srt/{src}/{key}.srt",
-            "lang": f"Malayalam ({label})",
             "label": f"Malayalam [{label}]",
         })
     return out
