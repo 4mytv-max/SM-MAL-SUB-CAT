@@ -1766,10 +1766,14 @@ def _subtitle_entries(prefix, vtype, rid):
         if ("rid:" + key) not in idx:
             idx["rid:" + key] = urllib.parse.unquote(rid)
             _sub_index_save(idx)
-        # TV-compatible format: show movie name only (user request 2026-10-11)
-        # id: goat-tt123 / moviemirror-tt123, lang: movie name
+        # TV-compatible format: "Malayalam (source) - Movie Name"
+        # lang MUST contain "Malayalam" for Stremio/TV language detection!
+        # Movie name only breaks the subtitle display (2026-10-11).
         prefix_map = {"goat": "goat", "mm": "moviemirror", "msone": "msone"}
-        base_label = ""
+        label_map = {"goat": "Malayalam (Team GOAT)",
+                     "mm": "Malayalam (Movie Mirror)",
+                     "msone": "Malayalam (Msone)"}
+        base_label = label_map.get(src, "Malayalam")
         # Look up movie name from data
         movie_name = ""
         try:
@@ -1787,8 +1791,8 @@ def _subtitle_entries(prefix, vtype, rid):
                         movie_name = item.get("name_en") or item.get("name_ml") or ""
         except Exception:
             pass
-        # Use movie name only (like FRESH v1.0.7)
-        base_label = movie_name if movie_name else "Malayalam"
+        if movie_name:
+            base_label = f"{base_label} - {movie_name}"
         out.append({
             "id": f"{prefix_map.get(src, src)}-{imdb_id}",
             "url": f"{base}{prefix}/srt/{src}/{key}.srt",
