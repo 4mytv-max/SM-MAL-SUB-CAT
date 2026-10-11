@@ -921,7 +921,8 @@ def smc_metas(cid):
         return _mega_metas[cid]
     cat = next(c for c in _all_cat_defs() if c["id"] == cid)
     metas = [_to_meta(it) for it in _items_for_cat(cat)]
-    metas = [m for m in metas if m.get("poster")]
+    # Do NOT filter by poster - user rule: never hide titles (2026-10-08)
+    # Babita and others without TMDB posters must still appear.
     _mega_metas[cid] = metas
     return metas
 
