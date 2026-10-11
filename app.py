@@ -1639,7 +1639,7 @@ def manifest():
                        "new subtitles appear automatically.",
         "types": ["movie", "series"],
         "idPrefixes": ["tt", "tmdb:", "smcs:"],
-        "resources": ["catalog", "meta"],
+        "resources": ["catalog", "meta", "subtitles"],
         "catalogs": [
             {"type": c["type"], "id": c["id"], "name": c["name"],
              "extra": [{"name": "skip", "isRequired": False},
@@ -1807,7 +1807,9 @@ def _serve_srt(src, key):
 
 
 @app.route("/subtitles/<vtype>/<rid>.json")
-def subtitles(vtype, rid):
+@app.route("/subtitles/<vtype>/<rid>/<params>.json")
+@app.route("/subtitles/<vtype>/<rid>/<path:params>")
+def subtitles(vtype, rid, params=None):
     import time
     start = time.time()
     ua = request.headers.get("User-Agent", "?")[:80]
@@ -1848,7 +1850,9 @@ def sub_manifest():
 
 
 @app.route("/sub/subtitles/<vtype>/<rid>.json")
-def sub_subtitles(vtype, rid):
+@app.route("/sub/subtitles/<vtype>/<rid>/<params>.json")
+@app.route("/sub/subtitles/<vtype>/<rid>/<path:params>")
+def sub_subtitles(vtype, rid, params=None):
     import time
     start = time.time()
     ua = request.headers.get("User-Agent", "?")[:80]
