@@ -1766,11 +1766,16 @@ def _subtitle_entries(prefix, vtype, rid):
         if ("rid:" + key) not in idx:
             idx["rid:" + key] = urllib.parse.unquote(rid)
             _sub_index_save(idx)
-        # Single entry with standard "mal" lang (like official Msone)
+        # TV-compatible format (matches SM SUB FRESH v1.0.5):
+        # id: goat-tt123 / moviemirror-tt123, lang: "Malayalam (Team GOAT)" etc.
+        prefix_map = {"goat": "goat", "mm": "moviemirror", "msone": "msone"}
+        label_map = {"goat": "Malayalam (Team GOAT)",
+                     "mm": "Malayalam (Movie Mirror)",
+                     "msone": "Malayalam (Msone)"}
         out.append({
-            "id": f"smsub:{src}:{rid}",
+            "id": f"{prefix_map.get(src, src)}-{imdb_id}",
             "url": f"{base}{prefix}/srt/{src}/{key}.srt",
-            "lang": "mal",
+            "lang": label_map.get(src, "Malayalam"),
         })
     # Official Msone addon (pass-through) — covers Msone-only titles
     # that Cloudflare blocks us from fetching directly.
