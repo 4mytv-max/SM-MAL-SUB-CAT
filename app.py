@@ -901,13 +901,17 @@ def _full_goat_items():
         for e in goat_items():
             for it in e.get("items", [e]):
                 if it.get("media") == "movie" or "movie" in str(it.get("type", "")).lower():
+                    # Don't use site logo as poster (misleading) - user 2026-10-11
+                    poster_url = it.get("poster_url")
+                    if poster_url and "goatblack" in poster_url:
+                        poster_url = None
                     items.append({
                         "card_id": it.get("imdb_id") or f"goat-{it.get('id', '')}",
                         "name": it.get("name_en") or it.get("name") or "",
                         "name_ml": it.get("name_ml"),
                         "media": "movie",
                         "poster_path": it.get("poster_path"),
-                        "poster_url": it.get("poster_url"),
+                        "poster_url": poster_url,
                         "backdrop_path": it.get("backdrop_path"),
                         "overview": it.get("overview") or "",
                         "year": it.get("year"),
