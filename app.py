@@ -550,11 +550,15 @@ def _to_meta(it, with_videos=False):
     if urls:
         desc += "\n" + urls
     # poster: TMDB path first, then direct URL (GOAT homepage)
+    # Fallback to Suresh Mulla logo if no poster (user: "Poster വരണം" 2026-10-11)
     poster = None
     if it.get("poster_path"):
         poster = f"{POSTER}{it['poster_path']}"
     elif it.get("poster_url"):
         poster = it["poster_url"]
+    else:
+        # Default fallback - Suresh Mulla logo
+        poster = "https://sm-mal-sub-cat-pyx0.onrender.com/static/logo.png"
     meta = {
         "id": it["card_id"],
         "type": "movie" if it["media"] == "movie" else "series",
