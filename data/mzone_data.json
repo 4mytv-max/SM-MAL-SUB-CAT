@@ -1,7 +1,42 @@
 {
- "generated": "2026-10-06",
+ "generated": "2026-10-11",
  "sections": {
   "New Releases": [
+   {
+    "id": 1560520,
+    "type": "movie",
+    "media": "movie",
+    "name": "Batman: Knightfall Part 1: Knightfall",
+    "name_ml": "ബാറ്റ്മാൻ: നൈറ്റ് ഫോൾ – പാർട്ട് 1",
+    "year": "2026",
+    "poster_path": "/360qdtu2hLnqMu8SVHMywn420w1.jpg",
+    "backdrop_path": "/caBIySpwuFi2i7ynvHIlnxJLOdN.jpg",
+    "overview": "When the mysterious behemoth known only as Bane frees Batman's entire rogue's gallery from Arkham Asylum, the Caped Crusader is pushed to his mental and physical breaking point.",
+    "genre_ids": [
+     16,
+     28,
+     12
+    ],
+    "post_url": "https://malayalamsubtitles.org/languages/english/batman-knightfall-part-1-2026/",
+    "imdb_id": "tt32333324"
+   },
+   {
+    "id": 760774,
+    "type": "movie",
+    "media": "movie",
+    "name": "One Life",
+    "name_ml": "വൺ ലൈഫ്",
+    "year": "2023",
+    "poster_path": "/yvnIWt2j8VnDgwKJE2VMiFMa2Qo.jpg",
+    "backdrop_path": "/7kgDHoXEk0EySTczcmaYpPDBFQS.jpg",
+    "overview": "The true story of Sir Nicholas 'Nicky' Winton, a young London broker who, in the months leading up to World War II, rescued 669 predominantly Jewish children from the Nazis.",
+    "genre_ids": [
+     18,
+     36
+    ],
+    "post_url": "https://malayalamsubtitles.org/languages/english/one-life-2023/",
+    "imdb_id": "tt13097932"
+   },
    {
     "id": 227191,
     "type": "series",
@@ -140,41 +175,6 @@
     ],
     "post_url": "https://malayalamsubtitles.org/languages/english/disclosure-day-2026/",
     "imdb_id": "tt15047880"
-   },
-   {
-    "id": 1461254,
-    "type": "movie",
-    "media": "movie",
-    "name": "Salmokji: Whispering Water",
-    "name_ml": "സൽമോക്ജി : വിസ്‌പെറിംഗ് വാട്ടർ",
-    "year": "2026",
-    "poster_path": "/bOl0rJ86WWxVYlQlGttHhHuYiPQ.jpg",
-    "backdrop_path": "/edVIvTc8RofOTxoAZN7a5kxIAay.jpg",
-    "overview": "An incident unfolds when a film crew goes to a reservoir to update the road view where an unidentified figure was filmed, and they encounter something in the dark, deep waters.",
-    "genre_ids": [
-     27,
-     53
-    ],
-    "post_url": "https://malayalamsubtitles.org/languages/korean/salmokji-whispering-water-2026/",
-    "imdb_id": "tt39833109"
-   },
-   {
-    "id": 1101383,
-    "type": "movie",
-    "media": "movie",
-    "name": "The End of Oak Street",
-    "name_ml": "ദി എൻഡ് ഓഫ് ഓക് സ്ട്രീറ്റ്",
-    "year": "2026",
-    "poster_path": "/fYXqpgPmHMphSF2W30GbTeJVIa5.jpg",
-    "backdrop_path": "/b9q9VmbXDvJmTziRqkwdEmFdwhr.jpg",
-    "overview": "After a mysterious cosmic event rips Oak Street from suburbia and transports their neighborhood to someplace unknown, the Platt family soon discovers that their very survival depends on them sticking together as they navigate their now unrecognizable surroundings.",
-    "genre_ids": [
-     878,
-     9648,
-     53
-    ],
-    "post_url": "https://malayalamsubtitles.org/languages/english/the-end-of-oak-street-2026/",
-    "imdb_id": "tt27165187"
    }
   ],
   "Trending Today": [
@@ -509,6 +509,41 @@
   ]
  },
  "archive": [
+  {
+   "id": 1560520,
+   "type": "movie",
+   "media": "movie",
+   "name": "Batman: Knightfall Part 1: Knightfall",
+   "name_ml": "ബാറ്റ്മാൻ: നൈറ്റ് ഫോൾ – പാർട്ട് 1",
+   "year": "2026",
+   "poster_path": "/360qdtu2hLnqMu8SVHMywn420w1.jpg",
+   "backdrop_path": "/caBIySpwuFi2i7ynvHIlnxJLOdN.jpg",
+   "overview": "When the mysterious behemoth known only as Bane frees Batman's entire rogue's gallery from Arkham Asylum, the Caped Crusader is pushed to his mental and physical breaking point.",
+   "genre_ids": [
+    16,
+    28,
+    12
+   ],
+   "post_url": "https://malayalamsubtitles.org/languages/english/batman-knightfall-part-1-2026/",
+   "imdb_id": "tt32333324"
+  },
+  {
+   "id": 760774,
+   "type": "movie",
+   "media": "movie",
+   "name": "One Life",
+   "name_ml": "വൺ ലൈഫ്",
+   "year": "2023",
+   "poster_path": "/yvnIWt2j8VnDgwKJE2VMiFMa2Qo.jpg",
+   "backdrop_path": "/7kgDHoXEk0EySTczcmaYpPDBFQS.jpg",
+   "overview": "The true story of Sir Nicholas 'Nicky' Winton, a young London broker who, in the months leading up to World War II, rescued 669 predominantly Jewish children from the Nazis.",
+   "genre_ids": [
+    18,
+    36
+   ],
+   "post_url": "https://malayalamsubtitles.org/languages/english/one-life-2023/",
+   "imdb_id": "tt13097932"
+  },
   {
    "id": 227191,
    "type": "series",
