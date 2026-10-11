@@ -957,7 +957,6 @@ def _live_mm_releases():
     try:
         data = _api_fetch_json(
             f"{MM_WP_API}/posts?per_page=15&orderby=date&order=desc"
-            f"&_fields=id,link,title,date,featured_media,_embedded"
             f"&_embed=wp:featuredmedia", timeout=15)
         for p in data:
             title_raw = html.unescape(
