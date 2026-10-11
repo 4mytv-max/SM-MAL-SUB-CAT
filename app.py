@@ -1630,7 +1630,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.2",
+        "version": "2.4.1",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
@@ -1766,14 +1766,10 @@ def _subtitle_entries(prefix, vtype, rid):
         if ("rid:" + key) not in idx:
             idx["rid:" + key] = urllib.parse.unquote(rid)
             _sub_index_save(idx)
-        # TV-compatible format (matches SM SUB FRESH v1.0.5):
-        # id: goat-tt123 / moviemirror-tt123, lang: "Malayalam (Team GOAT)" etc.
-        # Add movie name to card (user request 2026-10-11)
+        # TV-compatible format: show movie name only (user request 2026-10-11)
+        # id: goat-tt123 / moviemirror-tt123, lang: movie name
         prefix_map = {"goat": "goat", "mm": "moviemirror", "msone": "msone"}
-        label_map = {"goat": "Malayalam (Team GOAT)",
-                     "mm": "Malayalam (Movie Mirror)",
-                     "msone": "Malayalam (Msone)"}
-        base_label = label_map.get(src, "Malayalam")
+        base_label = ""
         # Look up movie name from data
         movie_name = ""
         try:
@@ -1791,8 +1787,8 @@ def _subtitle_entries(prefix, vtype, rid):
                         movie_name = item.get("name_en") or item.get("name_ml") or ""
         except Exception:
             pass
-        if movie_name:
-            base_label = f"{base_label} - {movie_name}"
+        # Use movie name only (like FRESH v1.0.7)
+        base_label = movie_name if movie_name else "Malayalam"
         out.append({
             "id": f"{prefix_map.get(src, src)}-{imdb_id}",
             "url": f"{base}{prefix}/srt/{src}/{key}.srt",
