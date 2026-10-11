@@ -1768,14 +1768,35 @@ def _subtitle_entries(prefix, vtype, rid):
             _sub_index_save(idx)
         # TV-compatible format (matches SM SUB FRESH v1.0.5):
         # id: goat-tt123 / moviemirror-tt123, lang: "Malayalam (Team GOAT)" etc.
+        # Add movie name to card (user request 2026-10-11)
         prefix_map = {"goat": "goat", "mm": "moviemirror", "msone": "msone"}
         label_map = {"goat": "Malayalam (Team GOAT)",
                      "mm": "Malayalam (Movie Mirror)",
                      "msone": "Malayalam (Msone)"}
+        base_label = label_map.get(src, "Malayalam")
+        # Look up movie name from data
+        movie_name = ""
+        try:
+            if src == "mm":
+                e = mm_by_tt().get(imdb_id)
+                if e:
+                    item = _pick_series(e, season)
+                    if item:
+                        movie_name = item.get("name_en") or item.get("name_ml") or ""
+            elif src == "goat":
+                e = goat_by_tt().get(imdb_id)
+                if e:
+                    item = _pick_series(e, season)
+                    if item:
+                        movie_name = item.get("name_en") or item.get("name_ml") or ""
+        except Exception:
+            pass
+        if movie_name:
+            base_label = f"{base_label} - {movie_name}"
         out.append({
             "id": f"{prefix_map.get(src, src)}-{imdb_id}",
             "url": f"{base}{prefix}/srt/{src}/{key}.srt",
-            "lang": label_map.get(src, "Malayalam"),
+            "lang": base_label,
         })
     # Official Msone addon (pass-through) — covers Msone-only titles
     # that Cloudflare blocks us from fetching directly.
