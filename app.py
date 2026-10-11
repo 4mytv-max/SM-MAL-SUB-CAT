@@ -290,6 +290,12 @@ def smc_catalog_defs():
          "name": "Team GOAT New Releases", "kind": "live_goat"},
         {"id": "smc_new_mm", "type": "movie",
          "name": "Movie Mirror New Releases", "kind": "live_mm"},
+        {"id": "smc_full_msone", "type": "movie",
+         "name": "Msone Movies", "kind": "full_msone"},
+        {"id": "smc_full_goat", "type": "movie",
+         "name": "Team GOAT Movies", "kind": "full_goat"},
+        {"id": "smc_full_mm", "type": "movie",
+         "name": "Movie Mirror Movies", "kind": "full_mm"},
         {"id": "smc_natsci_docs", "type": "series",
          "name": "Nature and Science Documentaries", "kind": "doc_natsci"},
         {"id": "smc_ko_new_m", "type": "movie",
@@ -387,6 +393,12 @@ def _items_for_cat(cat):
         return _live_goat_releases()
     if kind == "live_mm":
         return _live_mm_releases()
+    if kind == "full_msone":
+        return _full_msone_items()
+    if kind == "full_goat":
+        return _full_goat_items()
+    if kind == "full_mm":
+        return _full_mm_items()
     if kind == "doc_natsci":
         # nature & science documentary series (Discovery/NatGeo style)
         return [it for it in items
@@ -853,6 +865,84 @@ def _live_goat_releases():
         pass
     with _newrel_lock:
         _newrel_cache["goat"] = {"at": time.time(), "items": items}
+    return items
+
+
+def _full_mm_items():
+    """All Movie Mirror items from data file (for full catalogue row)."""
+    items = []
+    try:
+        for e in mm_items():
+            for it in e.get("items", [e]):
+                if it.get("media") == "movie" or "movie" in str(it.get("type", "")).lower():
+                    items.append({
+                        "card_id": it.get("imdb_id") or f"mm-{it.get('id', '')}",
+                        "name": it.get("name_en") or it.get("name") or "",
+                        "name_ml": it.get("name_ml"),
+                        "media": "movie",
+                        "poster_path": it.get("poster_path"),
+                        "poster_url": it.get("poster_url"),
+                        "backdrop_path": it.get("backdrop_path"),
+                        "overview": it.get("overview") or "",
+                        "year": it.get("year"),
+                        "genre_ids": it.get("genre_ids") or [],
+                        "sources": ["mm"],
+                        "post_urls": {"mm": it.get("post_url", "")},
+                    })
+    except Exception:
+        pass
+    return items
+
+
+def _full_goat_items():
+    """All Team GOAT items from data file (for full catalogue row)."""
+    items = []
+    try:
+        for e in goat_items():
+            for it in e.get("items", [e]):
+                if it.get("media") == "movie" or "movie" in str(it.get("type", "")).lower():
+                    items.append({
+                        "card_id": it.get("imdb_id") or f"goat-{it.get('id', '')}",
+                        "name": it.get("name_en") or it.get("name") or "",
+                        "name_ml": it.get("name_ml"),
+                        "media": "movie",
+                        "poster_path": it.get("poster_path"),
+                        "poster_url": it.get("poster_url"),
+                        "backdrop_path": it.get("backdrop_path"),
+                        "overview": it.get("overview") or "",
+                        "year": it.get("year"),
+                        "genre_ids": it.get("genre_ids") or [],
+                        "sources": ["goat"],
+                        "post_urls": {"goat": it.get("post_url", "")},
+                    })
+    except Exception:
+        pass
+    return items
+
+
+def _full_msone_items():
+    """All Msone items from data file (for full catalogue row)."""
+    items = []
+    try:
+        for it in mzone_items():
+            # mzone_items returns flat list
+            if isinstance(it, dict):
+                items.append({
+                    "card_id": it.get("imdb_id") or f"msone-{it.get('id', '')}",
+                    "name": it.get("name") or "",
+                    "name_ml": it.get("name_ml"),
+                    "media": "movie",
+                    "poster_path": it.get("poster_path"),
+                    "poster_url": it.get("poster_url"),
+                    "backdrop_path": it.get("backdrop_path"),
+                    "overview": it.get("overview") or "",
+                    "year": it.get("year"),
+                    "genre_ids": it.get("genre_ids") or [],
+                    "sources": ["msone"],
+                    "post_urls": {"msone": it.get("post_url", "")},
+                })
+    except Exception:
+        pass
     return items
 
 
