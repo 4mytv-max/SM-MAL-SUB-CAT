@@ -1631,7 +1631,7 @@ def manifest():
     return jsonify({
         "id": "com.smmal.catsub.v2",
         "version": "2.4.1",
-        "name": "SM MAL CATALOG v2",
+        "name": "Suresh Mullakkal MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
                        "(Msone + Movie Mirror + Team GOAT combined) WITH "
