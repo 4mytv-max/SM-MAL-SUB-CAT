@@ -36,21 +36,26 @@ app = Flask(__name__)
 # New URL: https://sm-mal-sub-cat-pyx0.onrender.com/00/manifest.json
 SECRET_PREFIX = "/00"
 
-@app.before_request
-def _check_secret():
-    path = request.path
-    # Allow /00/ prefixed paths - strip prefix for routing
-    if path == SECRET_PREFIX:
-        return None
-    if path.startswith(SECRET_PREFIX + "/"):
-        # Rewrite PATH_INFO to strip prefix
-        request.environ["PATH_INFO"] = path[len(SECRET_PREFIX):] or "/"
-        return None
-    # Allow root (shows info) and static files
-    if path == "/" or path.startswith("/static/"):
-        return None
-    # Block old public URLs
-    return Response("Not found", status=404)
+class SecretPrefixMiddleware:
+    """WSGI middleware: strips /00 prefix, blocks non-prefixed paths."""
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, environ, start_response):
+        path = environ.get("PATH_INFO", "")
+        if path == SECRET_PREFIX:
+            environ["PATH_INFO"] = "/"
+        elif path.startswith(SECRET_PREFIX + "/"):
+            environ["PATH_INFO"] = path[len(SECRET_PREFIX):] or "/"
+        elif path == "/" or path.startswith("/static/"):
+            pass  # Allow root and static
+        else:
+            # Block old public URLs
+            start_response("404 Not Found", [("Content-Type", "text/plain")])
+            return [b"Not found"]
+        return self.app(environ, start_response)
+
+app.wsgi_app = SecretPrefixMiddleware(app.wsgi_app)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
