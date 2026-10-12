@@ -993,12 +993,26 @@ def _live_mm_releases():
             if not en or re.match(r"^[\W_]+$", en):
                 continue
             enrich = _tmdb_search_enrich(en, year)
+            # Fallback: check data file for site poster (user 2026-10-12)
+            poster_url = None
+            if not (enrich or {}).get("poster_path"):
+                try:
+                    for e in mm_items():
+                        for dit in e.get("items", [e]):
+                            if dit.get("post_url", "").rstrip("/") == link.rstrip("/"):
+                                poster_url = dit.get("poster_url")
+                                break
+                        if poster_url:
+                            break
+                except Exception:
+                    pass
             it = {
                 "card_id": f"smcs:new:mm:{slug}",
                 "name": en,
                 "name_ml": ml,
                 "media": (enrich or {}).get("media", "movie"),
                 "poster_path": (enrich or {}).get("poster_path"),
+                "poster_url": poster_url,
                 "backdrop_path": (enrich or {}).get("backdrop_path"),
                 "overview": (enrich or {}).get("overview") or "",
                 "year": year,
