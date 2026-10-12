@@ -290,8 +290,8 @@ def smc_catalog_defs():
          "name": "Team GOAT New Releases", "kind": "live_goat"},
         {"id": "smc_new_mm", "type": "movie",
          "name": "Movie Mirror New Releases", "kind": "live_mm"},
-        {"id": "smc_new_mm_series", "type": "series",
-         "name": "Movie Mirror New Releases - Series", "kind": "live_mm_series"},
+        {"id": "smc_new_series", "type": "series",
+         "name": "New Release Series", "kind": "live_new_series"},
         {"id": "smc_full_msone", "type": "movie",
          "name": "Msone Movies", "kind": "full_msone"},
         {"id": "smc_full_goat", "type": "movie",
@@ -395,9 +395,19 @@ def _items_for_cat(cat):
         return _live_goat_releases()
     if kind == "live_mm":
         return _live_mm_releases()
-    if kind == "live_mm_series":
-        # Only series from MM new releases
-        return [it for it in _live_mm_releases() if it.get("media") == "tv"]
+    if kind == "live_new_series":
+        # Combined series from all three new releases
+        series = []
+        for it in _live_msone_releases():
+            if it.get("media") == "tv":
+                series.append(it)
+        for it in _live_goat_releases():
+            if it.get("media") == "tv":
+                series.append(it)
+        for it in _live_mm_releases():
+            if it.get("media") == "tv":
+                series.append(it)
+        return series
     if kind == "full_msone":
         return _full_msone_items()
     if kind == "full_goat":
