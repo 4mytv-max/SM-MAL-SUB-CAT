@@ -549,12 +549,18 @@ def _to_meta(it, with_videos=False):
              if labels else "")
     if urls:
         desc += "\n" + urls
-    # poster: TMDB path first, then direct URL (GOAT homepage)
+    # poster: TMDB path first, then direct URL (GOAT homepage / MM site)
+    # MM site blocks app User-Agents -> route via /poster/ proxy
     poster = None
     if it.get("poster_path"):
         poster = f"{POSTER}{it['poster_path']}"
     elif it.get("poster_url"):
-        poster = it["poster_url"]
+        purl = it["poster_url"]
+        if "moviemirrorsubtitles.com" in purl:
+            proxy_base = "https://sm-mal-sub-cat-pyx0.onrender.com"
+            poster = f"{proxy_base}/poster/?url={urllib.parse.quote(purl, safe='')}"
+        else:
+            poster = purl
     meta = {
         "id": it["card_id"],
         "type": "movie" if it["media"] == "movie" else "series",
@@ -2078,6 +2084,37 @@ def goatmm_srt(src, key):
         resp.headers["Access-Control-Allow-Origin"] = "*"
         resp.headers["Access-Control-Allow-Headers"] = "*"
     return resp
+
+
+# Poster proxy: fetches images from sites that block app User-Agents
+# (e.g., moviemirrorsubtitles.com) and serves them to the app
+# Usage: /poster/?url=<encoded-image-url>
+@app.route("/poster/")
+def poster_proxy():
+    import base64
+    url = request.args.get("url", "")
+    if not url:
+        return Response("Missing url", status=400)
+    # Only allowlist our known image hosts
+    allowed = ("moviemirrorsubtitles.com", "malayalamsubtitles.in",
+               "malayalamsubtitles.org", "image.tmdb.org")
+    try:
+        parts = urllib.parse.urlsplit(url)
+        if parts.hostname not in allowed:
+            return Response("Host not allowed", status=403)
+        req = urllib.request.Request(
+            url, headers={"User-Agent": UA,
+                          "Referer": f"{parts.scheme}://{parts.hostname}/"})
+        with urllib.request.urlopen(req, timeout=20) as r:
+            data = r.read()
+            ctype = r.headers.get("Content-Type", "image/jpeg")
+            if len(data) > 5 * 1024 * 1024:  # 5MB limit
+                return Response("Image too large", status=413)
+            return Response(data, mimetype=ctype,
+                            headers={"Cache-Control": "public, max-age=86400"})
+    except Exception as e:
+        print(f"[poster-proxy] error {url[:60]}: {e}", flush=True)
+        return Response("Fetch failed", status=502)
 
 
 @app.route("/")
