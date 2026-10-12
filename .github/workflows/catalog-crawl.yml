@@ -1,18 +1,28 @@
-name: Catalog crawl (dry-run)
+name: Catalog crawl
 
-# DRY-RUN ONLY: checks the three source sites for new posts and logs the
-# counts. Writes nothing, commits nothing. The live pipeline (cron jobs +
-# Render) is untouched until this is proven and explicitly switched over.
+# Two modes:
+# - dry-run (default): checks the three source sites for new posts and logs
+#   the counts. Writes nothing, commits nothing.
+# - live: runs live_update.py (Movie Mirror + Team GOAT only; Msone stays on
+#   the assistant's cron since its site blocks datacenter IPs), then commits
+#   and pushes data changes (Render auto-deploys).
+# Scheduled runs go live only when the repo variable CATALOG_LIVE_MODE=true.
 on:
   schedule:
     # Wed & Sun 04:00 IST = Tue & Sat 22:30 UTC
     - cron: '30 22 * * 2,6'
-  workflow_dispatch:  # manual test trigger
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Run mode'
+        type: choice
+        options: [dry-run, live]
+        default: dry-run
 
 jobs:
-  dry-run-check:
+  catalog-update:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - name: Check out repo
         uses: actions/checkout@v4
@@ -22,5 +32,39 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Dry-run new-post check (no writes)
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Determine mode
+        id: mode
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.mode }}" = "live" ]; then
+            echo "live=true" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "schedule" ] && [ "${{ vars.CATALOG_LIVE_MODE }}" = "true" ]; then
+            echo "live=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "live=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Dry-run check (no writes)
+        if: steps.mode.outputs.live != 'true'
         run: python .github/scripts/dry_run_check.py
+
+      - name: Live catalog update
+        if: steps.mode.outputs.live == 'true'
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+        run: python .github/scripts/live_update.py
+
+      - name: Commit and push data changes
+        if: steps.mode.outputs.live == 'true'
+        run: |
+          git config user.name "muse-catalog-bot"
+          git config user.email "muse-catalog-bot@users.noreply.github.com"
+          git add data/mm_data.json data/goat_data.json
+          if git diff --cached --quiet; then
+            echo "No data changes to commit."
+          else
+            git commit -m "Catalog auto-update: new Movie Mirror / Team GOAT titles"
+            git push
+          fi
