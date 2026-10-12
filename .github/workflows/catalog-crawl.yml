@@ -21,6 +21,9 @@ on:
 
 jobs:
   catalog-update:
+    # GITHUB_TOKEN needs write access to push data updates
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
