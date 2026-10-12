@@ -31,7 +31,7 @@ def log(msg):
 
 
 def fetch(url, timeout=40, retries=2):
-    """Fetch a URL via curl (robust TLS/timeouts). Returns text."""
+    """Fetch a URL via curl (robust TLS/timeouts). Returns (text, http_code)."""
     global _last
     last_err = None
     for attempt in range(retries + 1):
@@ -41,19 +41,26 @@ def fetch(url, timeout=40, retries=2):
         try:
             r = subprocess.run(
                 ["curl", "-sL", "--max-time", str(timeout),
-                 "-A", UA, "-o", "-", url],
+                 "-A", UA, "-o", "-", "-w", "\n%{http_code}", url],
                 capture_output=True, timeout=timeout + 15)
             if r.returncode != 0:
                 raise IOError(f"curl rc={r.returncode}")
             if not r.stdout:
                 raise IOError("curl empty reply")
-            return r.stdout.decode("utf-8", errors="replace")
+            out = r.stdout.decode("utf-8", errors="replace")
+            body, _, code = out.rstrip().rpartition("\n")
+            return body, code.strip()
         except Exception as e:  # noqa: BLE001
             last_err = e
             time.sleep(2 * (attempt + 1))
         finally:
             _last = time.time()
     raise IOError(f"fetch failed for {url}: {last_err}")
+
+
+def snippet(text, n=300):
+    """First n chars, single line, for diagnostics."""
+    return re.sub(r"\s+", " ", text[:n])
 
 
 def load_known(path, keys=("post_url",)):
@@ -76,11 +83,13 @@ def load_known(path, keys=("post_url",)):
 
 def check_mm(known):
     t0 = time.time()
-    sm = fetch(MM_SITEMAP)
-    urls = re.findall(r"<loc><!\[CDATA\[([^\]]+)\]?></loc>", sm)
+    sm, code = fetch(MM_SITEMAP)
+    urls = re.findall(r"<loc>(?:<!\[CDATA\[)?([^<\]]+?)(?:\]\]>)?</loc>", sm)
     new = [u for u in urls if u.rstrip("/") not in known]
-    log(f"Movie Mirror: sitemap has {len(urls)} posts, "
+    log(f"Movie Mirror: http={code} sitemap has {len(urls)} posts, "
         f"{len(new)} not in catalog ({time.time()-t0:.0f}s)")
+    if not urls:
+        log(f"   DIAG sitemap head: {snippet(sm)}")
     for u in new[:10]:
         log(f"   NEW: {u}")
     return len(new)
@@ -90,7 +99,9 @@ def check_goat(known):
     t0 = time.time()
     found = set()
     for section in ("movies", "series"):
-        page = fetch(f"{GOAT_SITE}/{section}/")
+        page, code = fetch(f"{GOAT_SITE}/{section}/")
+        if section == "movies":
+            log(f"Team GOAT: http={code}")
         for m in re.finditer(r'href="(/release/[a-z0-9-]+)/?"', page):
             found.add(GOAT_SITE + m.group(1).rstrip("/") + "/")
     new = [u for u in found if u.rstrip("/") not in known]
@@ -103,12 +114,14 @@ def check_goat(known):
 
 def check_msone(known):
     t0 = time.time()
-    rss = fetch(MSOEN_RSS)
+    rss, code = fetch(MSOEN_RSS)
     links = re.findall(r"<item>.*?<link>([^<]+)</link>", rss, re.S)
     links = [l.strip() for l in links]
     new = [l for l in links if l.rstrip("/") not in known]
-    log(f"Msone: RSS feed has {len(links)} items, "
+    log(f"Msone: http={code} RSS feed has {len(links)} items, "
         f"{len(new)} not in catalog ({time.time()-t0:.0f}s)")
+    if not links:
+        log(f"   DIAG feed head: {snippet(rss)}")
     for l in new[:10]:
         log(f"   NEW: {l}")
     return len(new)
