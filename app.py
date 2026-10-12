@@ -963,17 +963,34 @@ def _live_mm_releases():
                 (p.get("title") or {}).get("rendered", ""))
             link = p.get("link", "")
             # "നോബഡി 2 ( Nobody 2 ) 2025" -> en/ml/year
+            # "സൈലോ : സീസൺ 1 | Silo : Season 1 (2023-)" -> en/ml/year
             ym = re.search(r"\b(19|20)\d{2}\b", title_raw)
             year = ym.group(0) if ym else None
-            # prefer english in parens
-            pm = re.search(r"\(\s*([^)]+?)\s*\)", title_raw)
-            en = pm.group(1).strip() if pm else title_raw
-            en = re.sub(r"\b(19|20)\d{2}\b", "", en).strip(" ()")
+            # Try " | " separator first (e.g., "മലയാളം | English")
+            en = None
             ml = None
-            if pm:
-                ml = title_raw[:pm.start()].strip(" ()")
+            if " | " in title_raw:
+                parts = title_raw.split(" | ", 1)
+                ml = parts[0].strip()
+                # English part may have year in parens: "Silo : Season 1 (2023-)"
+                en_part = parts[1].strip()
+                # Remove year parens
+                en = re.sub(r"\(\s*(19|20)\d{2}[^)]*\)", "", en_part).strip()
+                en = re.sub(r"\b(19|20)\d{2}\b", "", en).strip(" ()")
+            else:
+                # Fallback: prefer english in parens
+                pm = re.search(r"\(\s*([^)]+?)\s*\)", title_raw)
+                en = pm.group(1).strip() if pm else title_raw
+                en = re.sub(r"\b(19|20)\d{2}\b", "", en).strip(" ()")
+                if pm:
+                    ml = title_raw[:pm.start()].strip(" ()")
+            # Skip if en is empty or just punctuation
+            if not en or re.match(r"^[\W_]+$", en):
+                # Use full title as fallback
+                en = re.sub(r"\(\s*(19|20)\d{2}[^)]*\)", "", title_raw).strip()
+                en = re.sub(r"\b(19|20)\d{2}\b", "", en).strip(" ()|")
             slug = link.rstrip("/").split("/")[-1]
-            if not en:
+            if not en or re.match(r"^[\W_]+$", en):
                 continue
             enrich = _tmdb_search_enrich(en, year)
             it = {
