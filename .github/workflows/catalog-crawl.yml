@@ -1,0 +1,26 @@
+name: Catalog crawl (dry-run)
+
+# DRY-RUN ONLY: checks the three source sites for new posts and logs the
+# counts. Writes nothing, commits nothing. The live pipeline (cron jobs +
+# Render) is untouched until this is proven and explicitly switched over.
+on:
+  schedule:
+    # Wed & Sun 05:00 IST = Tue & Sat 23:30 UTC
+    - cron: '30 23 * * 2,6'
+  workflow_dispatch:  # manual test trigger
+
+jobs:
+  dry-run-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Dry-run new-post check (no writes)
+        run: python .github/scripts/dry_run_check.py
