@@ -566,6 +566,10 @@ def _to_meta(it, with_videos=False):
         desc += "\n" + urls
     # poster: TMDB path first, then direct URL (GOAT homepage / MM site)
     # MM site blocks app User-Agents -> route via /poster/ proxy
+    # Hardcoded site posters for items without TMDB (user 2026-10-12)
+    SITE_POSTERS = {
+        "strait of hormuz": "https://moviemirrorsubtitles.com/wp-content/uploads/2026/05/IMG-20260508-WA0298-scaled.jpg",
+    }
     poster = None
     if it.get("poster_path"):
         poster = f"{POSTER}{it['poster_path']}"
@@ -576,6 +580,14 @@ def _to_meta(it, with_videos=False):
             poster = f"{proxy_base}/poster/?url={urllib.parse.quote(purl, safe='')}"
         else:
             poster = purl
+    else:
+        # Check hardcoded site posters
+        name_lower = (it.get("name") or "").lower()
+        for key, purl in SITE_POSTERS.items():
+            if key in name_lower:
+                proxy_base = "https://sm-mal-sub-cat-pyx0.onrender.com"
+                poster = f"{proxy_base}/poster/?url={urllib.parse.quote(purl, safe='')}"
+                break
     meta = {
         "id": it["card_id"],
         "type": "movie" if it["media"] == "movie" else "series",
