@@ -957,19 +957,11 @@ def _live_mm_releases():
     try:
         data = _api_fetch_json(
             f"{MM_WP_API}/posts?per_page=15&orderby=date&order=desc"
-            f"&_embed=wp:featuredmedia", timeout=15)
+            f"&_fields=id,link,title,date", timeout=15)
         for p in data:
             title_raw = html.unescape(
                 (p.get("title") or {}).get("rendered", ""))
             link = p.get("link", "")
-            # Get poster from featured media (site has posters! user 2026-10-11)
-            poster_url = None
-            try:
-                embedded = p.get("_embedded", {})
-                media = embedded.get("wp:featuredmedia", [{}])[0]
-                poster_url = media.get("source_url")
-            except Exception:
-                pass
             # "നോബഡി 2 ( Nobody 2 ) 2025" -> en/ml/year
             ym = re.search(r"\b(19|20)\d{2}\b", title_raw)
             year = ym.group(0) if ym else None
@@ -990,7 +982,6 @@ def _live_mm_releases():
                 "name_ml": ml,
                 "media": (enrich or {}).get("media", "movie"),
                 "poster_path": (enrich or {}).get("poster_path"),
-                "poster_url": poster_url,  # From site featured image
                 "backdrop_path": (enrich or {}).get("backdrop_path"),
                 "overview": (enrich or {}).get("overview") or "",
                 "year": year,
