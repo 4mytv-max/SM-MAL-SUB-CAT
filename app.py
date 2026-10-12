@@ -447,8 +447,20 @@ def _items_for_cat(cat):
         return [it for it in items
                 if it["media"] == cat["media"] and it.get("lang") == cat["lang"]]
     if kind == "latest_docs":
-        return [it for it in items
+        docs = [it for it in items
                 if it["media"] == "movie" and is_doc(it)]
+        # Also check mm_data for docs not in mega (e.g., Strait of Hormuz)
+        # to avoid mega_data.json 500 issue (user 2026-10-12)
+        try:
+            for e in mm_items():
+                for dit in e.get("items", [e]):
+                    if dit.get("media") == "movie" and is_doc(dit):
+                        # Avoid duplicates by card_id
+                        if not any(d.get("card_id") == dit.get("card_id") for d in docs):
+                            docs.append(dit)
+        except Exception:
+            pass
+        return docs
     if kind == "docs_all":
         items = [it for it in items
                  if it["media"] == "movie" and is_doc(it)]
@@ -1887,6 +1899,18 @@ def meta(mtype, mid):
                     break
             except Exception:
                 pass
+    if not it:
+        # Fallback: check mm_data.json (for docs like Hormuz not in mega)
+        try:
+            for e in mm_items():
+                for dit in e.get("items", [e]):
+                    if dit.get("card_id") == mid:
+                        it = dit
+                        break
+                if it:
+                    break
+        except Exception:
+            pass
     if not it:
         return jsonify({"meta": {}})
     meta = _to_meta(it, with_videos=True)
