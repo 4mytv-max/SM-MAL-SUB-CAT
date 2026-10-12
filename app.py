@@ -1012,11 +1012,18 @@ def _live_mm_releases():
                             break
                 except Exception:
                     pass
+            # Detect series by name (Season/സീസൺ) if TMDB didn't identify
+            media_type = (enrich or {}).get("media", "movie")
+            if media_type == "movie":
+                # Check if it's actually a series
+                name_lower = (en + " " + (ml or "")).lower()
+                if "season" in name_lower or "സീസൺ" in name_lower:
+                    media_type = "tv"
             it = {
                 "card_id": f"smcs:new:mm:{slug}",
                 "name": en,
                 "name_ml": ml,
-                "media": (enrich or {}).get("media", "movie"),
+                "media": media_type,
                 "poster_path": (enrich or {}).get("poster_path"),
                 "poster_url": poster_url,
                 "backdrop_path": (enrich or {}).get("backdrop_path"),
