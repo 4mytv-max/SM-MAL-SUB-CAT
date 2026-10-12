@@ -32,6 +32,26 @@ from flask import Flask, jsonify, request, Response
 
 app = Flask(__name__)
 
+# Secret URL prefix (user 2026-10-12): old public URL disabled
+# New URL: https://sm-mal-sub-cat-pyx0.onrender.com/00/manifest.json
+SECRET_PREFIX = "/00"
+
+@app.before_request
+def _check_secret():
+    path = request.path
+    # Allow /00/ prefixed paths - strip prefix for routing
+    if path == SECRET_PREFIX:
+        return None
+    if path.startswith(SECRET_PREFIX + "/"):
+        # Rewrite PATH_INFO to strip prefix
+        request.environ["PATH_INFO"] = path[len(SECRET_PREFIX):] or "/"
+        return None
+    # Allow root (shows info) and static files
+    if path == "/" or path.startswith("/static/"):
+        return None
+    # Block old public URLs
+    return Response("Not found", status=404)
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 
@@ -588,7 +608,7 @@ def _to_meta(it, with_videos=False):
     elif it.get("poster_url"):
         purl = it["poster_url"]
         if "moviemirrorsubtitles.com" in purl:
-            proxy_base = "https://sm-mal-sub-cat-pyx0.onrender.com"
+            proxy_base = "https://sm-mal-sub-cat-pyx0.onrender.com/00"
             poster = f"{proxy_base}/poster/?url={urllib.parse.quote(purl, safe='')}"
         else:
             poster = purl
@@ -597,7 +617,7 @@ def _to_meta(it, with_videos=False):
         name_lower = (it.get("name") or "").lower()
         for key, purl in SITE_POSTERS.items():
             if key in name_lower:
-                proxy_base = "https://sm-mal-sub-cat-pyx0.onrender.com"
+                proxy_base = "https://sm-mal-sub-cat-pyx0.onrender.com/00"
                 poster = f"{proxy_base}/poster/?url={urllib.parse.quote(purl, safe='')}"
                 break
     meta = {
