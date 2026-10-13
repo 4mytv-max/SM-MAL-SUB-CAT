@@ -1867,7 +1867,7 @@ def manifest():
                        "new subtitles appear automatically.",
         "types": ["movie", "series"],
         "idPrefixes": ["tt", "tmdb:", "smcs:"],
-        "resources": ["catalog", "meta", "subtitles"],
+        "resources": ["catalog", "meta"],
         "catalogs": [
             {"type": c["type"], "id": c["id"], "name": c["name"],
              "extra": [{"name": "skip", "isRequired": False},
