@@ -786,8 +786,17 @@ def _live_msone_releases():
                     }
             # skip items without posters (can't show in catalog)
             # unless we have an IMDb override (we can show without perfect poster)
+            # EXCEPTION (user 2026-10-13): Don't skip Msone items - show them
+            # even without TMDB poster, user will see the title
             if not enrich or (not enrich.get("poster_path") and not enrich.get("imdb_id")):
-                continue
+                # For Msone, create minimal entry instead of skipping
+                enrich = {
+                    "imdb_id": None,
+                    "media": "movie",
+                    "poster_path": None,
+                    "overview": "",
+                    "genre_ids": [],
+                }
             it = {
                 "card_id": f"smcs:new:msone:{slug}",
                 "name": en,
