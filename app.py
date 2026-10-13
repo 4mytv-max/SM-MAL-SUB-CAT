@@ -789,12 +789,31 @@ def _live_msone_releases():
             # unless we have an IMDb override (we can show without perfect poster)
             # EXCEPTION (user 2026-10-13): Don't skip Msone items - show them
             # even without TMDB poster, user will see the title
+            # RULE (2026-10-11): If TMDB has no poster, fetch from site!
             if not enrich or (not enrich.get("poster_path") and not enrich.get("imdb_id")):
                 # For Msone, create minimal entry instead of skipping
+                # Try to get poster from Msone site (per 2026-10-11 rule)
+                # The post page has og:image with the poster
+                site_poster = None
+                try:
+                    # Quick fetch of post page to get og:image (5s timeout)
+                    import urllib.request
+                    req = urllib.request.Request(
+                        link, headers={"User-Agent": UA})
+                    with urllib.request.urlopen(req, timeout=5) as r:
+                        html = r.read().decode("utf-8", errors="replace")
+                        m = re.search(
+                            r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)["\']',
+                            html, re.I)
+                        if m:
+                            site_poster = m.group(1)
+                except Exception:
+                    pass
                 enrich = {
                     "imdb_id": None,
                     "media": "movie",
-                    "poster_path": None,
+                    "poster_path": site_poster,
+                    "poster_is_url": True if site_poster else False,
                     "overview": "",
                     "genre_ids": [],
                 }
