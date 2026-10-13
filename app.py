@@ -606,6 +606,7 @@ def _to_meta(it, with_videos=False):
     # Hardcoded site posters for items without TMDB (user 2026-10-12)
     SITE_POSTERS = {
         "strait of hormuz": "https://moviemirrorsubtitles.com/wp-content/uploads/2026/05/IMG-20260508-WA0298-scaled.jpg",
+        "fall 2: deadpoint": "https://malayalamsubtitles.org/wp-content/uploads/2026/10/Fall-2-2026-A.jpg",
     }
     poster = None
     if it.get("poster_path"):
