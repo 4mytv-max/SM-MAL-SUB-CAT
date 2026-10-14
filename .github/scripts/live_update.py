@@ -242,7 +242,10 @@ def update_mm():
     path = os.path.join(BASE, "data", "mm_data.json")
     data = json.load(open(path, encoding="utf-8"))
     known = {it["post_url"] for it in data["items"]}
-    log(f"MM: known items: {len(known)}")
+    # IMDb dedup: skip reposts of the same title under a new URL
+    # (Movie Mirror sometimes reposts the same IMDb item).
+    known_imdb = {it.get("imdb_id") for it in data["items"] if it.get("imdb_id")}
+    log(f"MM: known items: {len(known)}, known IMDb IDs: {len(known_imdb)}")
     sm = site_get(MM_SITEMAP)
     urls = re.findall(r"<loc>(?:<!\[CDATA\[)?([^<\]]+?)(?:\]\]>)?</loc>", sm)
     lastmods = re.findall(
@@ -261,6 +264,11 @@ def update_mm():
             item = mm_parse_post(u, page)
             if not item.get("name_en"):
                 raise ValueError("empty title parse")
+            # IMDb dedup: skip if this title already exists under another URL.
+            if item.get("imdb_id") and item["imdb_id"] in known_imdb:
+                log(f"MM SKIP {u}: IMDb {item['imdb_id']} already in catalog "
+                    f"({item.get('name_en')}) — repost, not new")
+                continue
             if not mm_sub_url_matches(item):
                 raise ValueError(
                     f"sub_url mismatch: {item.get('sub_url')!r} vs "
@@ -398,7 +406,9 @@ def update_goat():
     data = json.load(open(path, encoding="utf-8"))
     items = data.get("items") or data.get("archive") or []
     known = {it["post_url"] for it in items}
-    log(f"GOAT: known items: {len(known)}")
+    # IMDb dedup: skip reposts of the same title under a new URL.
+    known_imdb = {it.get("imdb_id") for it in items if it.get("imdb_id")}
+    log(f"GOAT: known items: {len(known)}, known IMDb IDs: {len(known_imdb)}")
     listing = goat_collect_listing_urls()
     log(f"GOAT: listing urls: {len(listing)}")
     if not listing:
@@ -416,6 +426,11 @@ def update_goat():
             item = goat_parse_post(u, page, pt)
             if not item.get("name_en"):
                 raise ValueError("empty title parse")
+            # IMDb dedup: skip if this title already exists under another URL.
+            if item.get("imdb_id") and item["imdb_id"] in known_imdb:
+                log(f"GOAT SKIP {u}: IMDb {item['imdb_id']} already in catalog "
+                    f"({item.get('name_en')}) — repost, not new")
+                continue
             m = OG_RE.search(page) or OG_RE2.search(page)
             if m:
                 item["poster_url"] = m.group(1)
