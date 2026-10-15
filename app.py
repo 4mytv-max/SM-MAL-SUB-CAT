@@ -851,8 +851,7 @@ def _live_msone_releases():
             with open(p, encoding="utf-8") as f:
                 mz = json.load(f)
             for it in (mz.get("sections", {}).get("New Releases", [])[:10]):
-                if not it.get("poster_path"):
-                    continue
+                # Do NOT skip items without posters (user rule 2026-10-11)
                 # Use IMDb ID if available, else check overrides by TMDB ID, else fallback
                 tmdb_id = it.get("id")
                 card_id = it.get("imdb_id")
