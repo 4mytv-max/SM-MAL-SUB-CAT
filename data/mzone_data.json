@@ -7,12 +7,13 @@
         "name": "The Return / ദി റിട്ടേൺ",
         "media": "movie",
         "year": "2024",
-        "poster_path": null,
+        "poster_path": "https://images.theposterdb.com/prod/public/images/posters/optimized/movies/2214012/2v66n0oz0nj87EcjGP1ABsNcGYyOLuFgM4L1m7NG.jpg",
         "overview": "",
         "genre_ids": [],
         "sources": [
           "msone"
-        ]
+        ],
+        "poster_is_url": true
       },
       {
         "id": "smcs:new:msone:fall-2-deadpoint-2026",
@@ -32,12 +33,13 @@
         "name": "Hope / ഹോപ്പ്",
         "media": "movie",
         "year": "2026",
-        "poster_path": null,
+        "poster_path": "https://cineboom.bg/wp-content/uploads/2026/08/hopechposters_3.jpg",
         "overview": "",
         "genre_ids": [],
         "sources": [
           "msone"
-        ]
+        ],
+        "poster_is_url": true
       },
       {
         "id": 9999991,
