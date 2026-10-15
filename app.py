@@ -275,6 +275,8 @@ IMDB_OVERRIDES = {
 # Format: "lowercase name (year)" -> (IMDb ID, TMDB poster_path)
 NAME_OVERRIDES = {
     "one life (2023)": ("tt13097932", "/yvnIWt2j8VnDgwKJE2VMiFMa2Qo.jpg"),
+    "fall 2: deadpoint (2026)": ("tt31192372", "https://malayalamsubtitles.org/wp-content/uploads/2026/10/Fall-2-2026-A.jpg"),
+    "the return (2024)": (None, None),
 }
 
 
@@ -839,8 +841,8 @@ def _live_msone_releases():
         # end for loop - process all items
     except Exception:
         pass
-    # Sort: items with IMDb IDs first, then by original order, take top 12
-    items.sort(key=lambda x: (0 if x["card_id"].startswith("tt") else 1))
+    # Keep RSS order (newest first), take top 12
+    # Do NOT sort by IMDb ID - newest releases must appear first
     items = items[:12]
     # fallback to saved data if live fetch gave nothing usable
     if not items:
@@ -1858,7 +1860,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.2",
+        "version": "2.4.1",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
