@@ -13,7 +13,8 @@
         "sources": [
           "msone"
         ],
-        "poster_is_url": true
+        "poster_is_url": true,
+        "imdb_id": "tt19861162"
       },
       {
         "id": "smcs:new:msone:fall-2-deadpoint-2026",
@@ -39,7 +40,8 @@
         "sources": [
           "msone"
         ],
-        "poster_is_url": true
+        "poster_is_url": true,
+        "imdb_id": "tt27369017"
       },
       {
         "id": 9999991,
