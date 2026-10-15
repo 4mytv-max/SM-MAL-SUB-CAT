@@ -3,6 +3,43 @@
   "sections": {
     "New Releases": [
       {
+        "id": "smcs:new:msone:the-return-2024",
+        "name": "The Return / ദി റിട്ടേൺ",
+        "media": "movie",
+        "year": "2024",
+        "poster_path": null,
+        "overview": "",
+        "genre_ids": [],
+        "sources": [
+          "msone"
+        ]
+      },
+      {
+        "id": "smcs:new:msone:fall-2-deadpoint-2026",
+        "name": "Fall 2: Deadpoint / ഫോൾ 2: ഡെഡ്പോയിന്റ്",
+        "media": "movie",
+        "year": "2026",
+        "poster_path": "https://malayalamsubtitles.org/wp-content/uploads/2026/10/Fall-2-2026-A.jpg",
+        "poster_is_url": true,
+        "overview": "",
+        "genre_ids": [],
+        "sources": [
+          "msone"
+        ]
+      },
+      {
+        "id": "smcs:new:msone:hope-2026",
+        "name": "Hope / ഹോപ്പ്",
+        "media": "movie",
+        "year": "2026",
+        "poster_path": null,
+        "overview": "",
+        "genre_ids": [],
+        "sources": [
+          "msone"
+        ]
+      },
+      {
         "id": 9999991,
         "type": "movie",
         "media": "movie",
