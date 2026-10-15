@@ -862,12 +862,16 @@ def _live_msone_releases():
                         pass
                 if not card_id:
                     card_id = f"smcs:new:msone:{tmdb_id}"
+                # Handle poster_is_url for direct URLs (e.g., Msone site posters)
+                _pp = it.get("poster_path")
+                _is_url = it.get("poster_is_url")
                 items.append({
                     "card_id": card_id,
                     "name": it.get("name") or "",
                     "name_ml": it.get("name_ml"),
                     "media": "tv" if it.get("media") == "tv" else "movie",
-                    "poster_path": it.get("poster_path"),
+                    "poster_path": _pp if not _is_url else None,
+                    "poster_url": _pp if _is_url else None,
                     "backdrop_path": it.get("backdrop_path"),
                     "overview": it.get("overview") or "",
                     "year": it.get("year"),
