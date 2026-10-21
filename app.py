@@ -174,6 +174,9 @@ _mega_defs = None
 _mega_hidden_defs = None
 _mega_metas = {}
 _mega_by_id = None
+# Catalog ids served live (never pinned in _mega_metas); their freshness is
+# governed by the 1h _newrel_cache TTL inside _live_*_releases().
+_LIVE_CIDS = {"smc_new_msone", "smc_new_goat", "smc_new_mm", "smc_new_series"}
 
 
 def _all_cat_defs():
@@ -900,7 +903,10 @@ def _live_msone_releases():
         })
         items = items[:12]
     with _newrel_lock:
-        _newrel_cache["msone"] = {"at": time.time(), "items": items}
+        # Never cache an empty result: a transient site failure must not
+        # blank the row for a full hour (2026-10-21 fix).
+        if items:
+            _newrel_cache["msone"] = {"at": time.time(), "items": items}
     return items
 
 
@@ -968,7 +974,10 @@ def _live_goat_releases():
     except Exception:
         pass
     with _newrel_lock:
-        _newrel_cache["goat"] = {"at": time.time(), "items": items}
+        # Never cache an empty result: a transient site failure must not
+        # blank the row for a full hour (2026-10-21 fix).
+        if items:
+            _newrel_cache["goat"] = {"at": time.time(), "items": items}
     return items
 
 
@@ -1144,7 +1153,10 @@ def _live_mm_releases():
     except Exception:
         pass
     with _newrel_lock:
-        _newrel_cache["mm"] = {"at": time.time(), "items": items}
+        # Never cache an empty result: a transient site failure must not
+        # blank the row for a full hour (2026-10-21 fix).
+        if items:
+            _newrel_cache["mm"] = {"at": time.time(), "items": items}
     return items
 
 
@@ -1155,7 +1167,11 @@ def smc_metas(cid):
     metas = [_to_meta(it) for it in _items_for_cat(cat)]
     # Do NOT filter by poster - user rule: never hide titles (2026-10-08)
     # Babita and others without TMDB posters must still appear.
-    _mega_metas[cid] = metas
+    # Live new-release rows are TTL-cached inside _live_*_releases already;
+    # pinning them here would freeze a transient empty fetch for the whole
+    # process lifetime (2026-10-21: Movie Mirror row went blank live).
+    if cid not in _LIVE_CIDS:
+        _mega_metas[cid] = metas
     return metas
 
 
@@ -1863,7 +1879,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.2",
+        "version": "2.4.1",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
