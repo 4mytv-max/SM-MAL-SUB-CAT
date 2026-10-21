@@ -1152,6 +1152,35 @@ def _live_mm_releases():
             items.append(it)
     except Exception:
         pass
+    # Fallback to saved data if the live WP API gave nothing usable
+    # (site flaky/blocked from datacenter IPs) - mirrors _live_msone_releases.
+    # Guarantees the row is never blank.
+    if not items:
+        try:
+            newest = sorted(mm_items(), key=lambda e: e.get("_lastmod") or "",
+                            reverse=True)[:15]
+            for dit in newest:
+                link = dit.get("post_url", "")
+                slug = link.rstrip("/").split("/")[-1]
+                en = dit.get("name_en") or ""
+                if not en:
+                    continue
+                items.append({
+                    "card_id": dit.get("imdb_id") or f"smcs:new:mm:{slug}",
+                    "name": en,
+                    "name_ml": dit.get("name_ml") or "",
+                    "media": "tv" if dit.get("type") == "series" else "movie",
+                    "poster_path": None,
+                    "poster_url": dit.get("poster_url"),
+                    "backdrop_path": None,
+                    "overview": "",
+                    "year": dit.get("year"),
+                    "genre_ids": [],
+                    "sources": ["mm"],
+                    "post_urls": {"mm": link},
+                })
+        except Exception:
+            pass
     with _newrel_lock:
         # Never cache an empty result: a transient site failure must not
         # blank the row for a full hour (2026-10-21 fix).
