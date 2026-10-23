@@ -63,6 +63,16 @@ DATA_DIR = os.path.join(BASE_DIR, "data")
 POSTER = "https://image.tmdb.org/t/p/w500"
 BG = "https://image.tmdb.org/t/p/w780"
 
+
+def _img(base, path):
+    """Compose an image URL: TMDB paths get the CDN prefix, but a stored
+    full http(s) URL passes through untouched. Prefixing a full URL yields
+    'https://image.tmdb.org/t/p/w500https://...' which loads nothing
+    (blank posters, e.g. Msone New Releases 2026-10-23)."""
+    if not path:
+        return None
+    return path if path.startswith("http") else f"{base}{path}"
+
 UA = ("Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/126.0 Mobile Safari/537.36")
 
@@ -615,7 +625,7 @@ def _to_meta(it, with_videos=False):
     }
     poster = None
     if it.get("poster_path"):
-        poster = f"{POSTER}{it['poster_path']}"
+        poster = _img(POSTER, it['poster_path'])
     elif it.get("poster_url"):
         purl = it["poster_url"]
         if "moviemirrorsubtitles.com" in purl:
@@ -636,7 +646,7 @@ def _to_meta(it, with_videos=False):
         "type": "movie" if it["media"] == "movie" else "series",
         "name": disp,
         "poster": poster,
-        "background": f"{BG}{it['backdrop_path']}" if it.get("backdrop_path") else None,
+        "background": _img(BG, it.get("backdrop_path")),
         "description": desc.strip(),
         "releaseInfo": str(it.get("year") or ""),
         "genres": [TMDB_GENRES[g] for g in (it.get("genre_ids") or [])
@@ -1908,7 +1918,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.2",
+        "version": "2.4.1",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
@@ -1981,10 +1991,10 @@ def meta(mtype, mid):
             "id": cat["id"],
             "type": cat["type"],
             "name": cat["name"],
-            "poster": (f"{POSTER}{first['poster_path']}"
-                       if first and first.get("poster_path") else None),
-            "background": (f"{BG}{first['backdrop_path']}"
-                           if first and first.get("backdrop_path") else None),
+            "poster": (_img(POSTER, first.get("poster_path"))
+                       if first else None),
+            "background": (_img(BG, first.get("backdrop_path"))
+                           if first else None),
             "description": (f"{len(items)} titles in {cat['name']}."
                             f"\n\nTop titles:\n{_top_lines(items)}").strip(),
         }
