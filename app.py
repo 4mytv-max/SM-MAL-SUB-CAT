@@ -32,6 +32,14 @@ from flask import Flask, jsonify, request, Response
 
 app = Flask(__name__)
 
+@app.after_request
+def add_cors_headers(response):
+    # Browser-based clients (Stremio Web, dx.bi) require CORS; native apps ignore it.
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    return response
+
 # Secret URL prefix (user 2026-10-12): old public URL disabled
 # New URL: https://sm-mal-sub-cat-pyx0.onrender.com/00/manifest.json
 SECRET_PREFIX = "/00"
@@ -1918,7 +1926,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.3",
+        "version": "2.4.4",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
