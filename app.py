@@ -1049,6 +1049,7 @@ def _full_mm_items():
                         "year": it.get("year"),
                         "genre_ids": it.get("genre_ids") or [],
                         "sources": ["mm"],
+                        "omdb": it.get("omdb"),
                         "post_urls": {"mm": it.get("post_url", "")},
                     })
     except Exception:
@@ -1075,6 +1076,7 @@ def _full_goat_items():
                         "year": it.get("year"),
                         "genre_ids": it.get("genre_ids") or [],
                         "sources": ["goat"],
+                        "omdb": it.get("omdb"),
                         "post_urls": {"goat": it.get("post_url", "")},
                     })
     except Exception:
@@ -1101,6 +1103,7 @@ def _full_msone_items():
                     "year": it.get("year"),
                     "genre_ids": it.get("genre_ids") or [],
                     "sources": ["msone"],
+                    "omdb": it.get("omdb"),
                     "post_urls": {"msone": it.get("post_url", "")},
                 })
     except Exception:
@@ -1226,6 +1229,7 @@ def _live_mm_releases():
                     "year": dit.get("year"),
                     "genre_ids": [],
                     "sources": ["mm"],
+                    "omdb": dit.get("omdb"),
                     "post_urls": {"mm": link},
                 })
         except Exception:
@@ -1957,7 +1961,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.5",
+        "version": "2.4.6",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
