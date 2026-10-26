@@ -620,6 +620,24 @@ def _to_meta(it, with_videos=False):
     labels = [SITE_LABEL[s] for s in it.get("sources", []) if s in SITE_LABEL]
     urls = "\n".join(it.get("post_urls", {}).values())
     desc = (it.get("overview") or "")
+    ob = it.get("omdb") or {}
+    bits = []
+    if ob.get("imdbRating") and ob["imdbRating"] != "N/A":
+        bits.append(f"⭐ IMDb: {ob['imdbRating']}/10")
+    if ob.get("rt") is not None:
+        bits.append(f"🍅 Rotten Tomatoes: {ob['rt']}%")
+    if ob.get("metascore") and ob["metascore"] != "N/A":
+        bits.append(f"Metascore: {ob['metascore']}")
+    if ob.get("runtime") and ob["runtime"] != "N/A":
+        bits.append(f"⏱ {ob['runtime']}")
+    if ob.get("rated") and ob["rated"] not in ("N/A", "Not Rated", "Unrated"):
+        bits.append(f"Rated: {ob['rated']}")
+    if bits:
+        desc += "\n\n" + "  •  ".join(bits)
+    if ob.get("actors") and ob["actors"] != "N/A":
+        desc += f"\n\n🎭 Cast: {ob['actors']}"
+    if ob.get("director") and ob["director"] != "N/A":
+        desc += f"\n🎬 Director: {ob['director']}"
     desc += ("\n\n\U0001F4DD Malayalam subtitles: " + ", ".join(labels)
              if labels else "")
     if urls:
@@ -660,6 +678,19 @@ def _to_meta(it, with_videos=False):
         "genres": [TMDB_GENRES[g] for g in (it.get("genre_ids") or [])
                    if g in TMDB_GENRES],
     }
+    if not meta["genres"] and ob.get("genre") and ob["genre"] != "N/A":
+        meta["genres"] = [g.strip() for g in ob["genre"].split(",")
+                           if g.strip()]
+    if ob.get("imdbRating") and ob["imdbRating"] != "N/A":
+        meta["imdbRating"] = ob["imdbRating"]
+    if ob.get("runtime") and ob["runtime"] != "N/A":
+        meta["runtime"] = ob["runtime"]
+    if ob.get("actors") and ob["actors"] != "N/A":
+        meta["cast"] = [a.strip() for a in ob["actors"].split(",")
+                         if a.strip()][:10]
+    if ob.get("director") and ob["director"] != "N/A":
+        meta["director"] = [d.strip() for d in ob["director"].split(",")
+                             if d.strip()]
     if with_videos and it.get("media") == "tv":
         vids = _series_videos(it)
         if vids:
@@ -1926,7 +1957,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.4",
+        "version": "2.4.5",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
