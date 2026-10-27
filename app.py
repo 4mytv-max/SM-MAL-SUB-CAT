@@ -30,6 +30,12 @@ from collections import Counter
 
 from flask import Flask, jsonify, request, Response
 
+try:
+    from PIL import Image, ImageDraw, ImageFont
+    _PIL_OK = True
+except Exception:
+    _PIL_OK = False
+
 app = Flask(__name__)
 
 @app.after_request
@@ -651,7 +657,7 @@ def _lang_display(it):
     return None
 
 
-def _to_meta(it, with_videos=False):
+def _to_meta(it, with_videos=False, detail=False):
     disp = it["name"] + (f" / {it['name_ml']}" if it.get("name_ml") else "")
     labels = [SITE_LABEL[s] for s in it.get("sources", []) if s in SITE_LABEL]
     urls = "\n".join(it.get("post_urls", {}).values())
@@ -726,6 +732,21 @@ def _to_meta(it, with_videos=False):
             proxy_base = "https://sm-mal-sub-cat-pyx0.onrender.com/00"
             poster = f"{proxy_base}/poster/?url={urllib.parse.quote(purl, safe='')}"
             break
+    if poster is None and iid and _PIL_OK:
+        # Malayalam community posters (user rule 2026-10-27): Msone
+        # posters on cards AND detail pages; GOAT/MM posters on cards
+        # only (their detail pages keep the clearer RPDB poster). The
+        # /mlposter/ route draws the rating strip onto the community
+        # poster, so every poster still carries ratings.
+        ml_url = it.get("ml_poster")
+        ml_src = it.get("ml_src")
+        if not ml_url:
+            _hit = _ml_lookup(iid)
+            if _hit:
+                ml_url, ml_src = _hit
+        if ml_url and (not detail or ml_src == "msone"):
+            poster = ("https://sm-mal-sub-cat-pyx0.onrender.com/00"
+                      f"/mlposter/{iid}.jpg")
     if poster is None and iid:
         poster = ("https://api.ratingposterdb.com/t0-free-rpdb/imdb/"
                   f"poster-default/{iid}.jpg?fallback=true")
@@ -2040,7 +2061,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.14",
+        "version": "2.4.15",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
@@ -2149,7 +2170,7 @@ def meta(mtype, mid):
             pass
     if not it:
         return jsonify({"meta": {}})
-    meta = _to_meta(it, with_videos=True)
+    meta = _to_meta(it, with_videos=True, detail=True)
     meta = {k: v for k, v in meta.items() if v}
     return jsonify({"meta": meta})
 
@@ -2378,6 +2399,154 @@ def goatmm_srt(src, key):
         resp.headers["Access-Control-Allow-Origin"] = "*"
         resp.headers["Access-Control-Allow-Headers"] = "*"
     return resp
+
+
+# ------------------------------------------------------------------
+# Malayalam community posters with a composited rating strip.
+# _ML_INDEX maps imdb_id -> (poster_url, source) built from the data
+# files' ml_poster fields; _ML_RATINGS maps imdb_id -> the strip
+# values (IMDb rating, Metascore, RT critics). The /mlposter/ route
+# fetches the community poster, draws the strip and serves the JPEG;
+# any failure redirects to the RPDB poster so a poster never breaks.
+_ML_INDEX = None
+_ML_RATINGS = None
+_ML_CACHE = {}
+_ML_LOCK = threading.Lock()
+
+
+def _ml_load():
+    global _ML_INDEX, _ML_RATINGS
+    if _ML_INDEX is not None:
+        return
+    idx, rats = {}, {}
+    try:
+        import glob as _glob
+        base = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            "data")
+        for path in _glob.glob(os.path.join(base, "*.json")):
+            try:
+                data = json.load(open(path))
+            except Exception:
+                continue
+            stack = [data]
+            while stack:
+                o = stack.pop()
+                if isinstance(o, dict):
+                    iid = o.get("imdb_id")
+                    if not iid:
+                        _m = re.search(r"tt\d{7,}",
+                                       str(o.get("card_id") or ""))
+                        iid = _m.group(0) if _m else None
+                    if o.get("ml_poster") and iid and iid not in idx:
+                        idx[iid] = (o["ml_poster"], o.get("ml_src") or "")
+                    if iid and iid not in rats:
+                        ob = o.get("omdb") or {}
+                        mb = o.get("mdb") or {}
+                        rt = ob.get("rt")
+                        if rt is None:
+                            rt = mb.get("tomatoes")
+                        rats[iid] = (ob.get("imdbRating"),
+                                     ob.get("metascore"), rt)
+                    stack.extend(o.values())
+                elif isinstance(o, list):
+                    stack.extend(o)
+    except Exception:
+        pass
+    _ML_INDEX, _ML_RATINGS = idx, rats
+
+
+def _ml_lookup(iid):
+    _ml_load()
+    return (_ML_INDEX or {}).get(iid)
+
+
+def _strip_metrics(iid):
+    _ml_load()
+    r = (_ML_RATINGS or {}).get(iid) or (None, None, None)
+    out = []
+    if r[0] and r[0] != "N/A":
+        out.append(("IMDb", f"{r[0]}/10", (245, 197, 24)))
+    if r[2] is not None:
+        out.append(("RT", f"{r[2]}%", (250, 50, 10)))
+    if r[1] and r[1] != "N/A":
+        out.append(("Meta", str(r[1]), (102, 204, 51)))
+    return out
+
+
+def _draw_strip(img, metrics):
+    w, h = img.size
+    band_h = max(34, int(h * 0.085))
+    font_size = max(13, int(band_h * 0.48))
+    try:
+        font = ImageFont.truetype(
+            os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                         "static", "DejaVuSans-Bold.ttf"), font_size)
+    except Exception:
+        font = ImageFont.load_default()
+    draw = ImageDraw.Draw(img, "RGBA")
+    draw.rectangle([0, h - band_h, w, h], fill=(0, 0, 0, 205))
+    parts = []
+    total = 0.0
+    for label, val, color in metrics:
+        text = f"{label} {val}"
+        tw = draw.textlength(text, font=font)
+        parts.append((label, val, color, tw))
+        total += tw
+    gap = font_size * 0.9
+    total += gap * (len(parts) - 1)
+    x = (w - total) / 2
+    # Center by the real glyph box: PIL's default anchor puts the
+    # ascent line at y, so font_size alone mis-centers the text and
+    # clips it on small posters (found on the 300px GOAT posters).
+    _bb = draw.textbbox((0, 0), "IMDb 0.0/10", font=font)
+    y = h - band_h + (band_h - (_bb[3] - _bb[1])) / 2 - _bb[1]
+    for label, val, color, tw in parts:
+        draw.text((x, y), label + " ", fill=color + (255,), font=font)
+        lw = draw.textlength(label + " ", font=font)
+        draw.text((x + lw, y), val, fill=(255, 255, 255, 255), font=font)
+        x += tw + gap
+    return img
+
+
+@app.route("/mlposter/<iid>.jpg")
+def mlposter(iid):
+    rpdb = ("https://api.ratingposterdb.com/t0-free-rpdb/imdb/"
+            f"poster-default/{iid}.jpg?fallback=true")
+    if not _PIL_OK or not re.fullmatch(r"tt\d{7,}", iid or ""):
+        return Response(status=302, headers={"Location": rpdb})
+    with _ML_LOCK:
+        hit = _ML_CACHE.get(iid)
+    if hit:
+        return Response(hit, mimetype="image/jpeg",
+                        headers={"Cache-Control": "public, max-age=604800"})
+    entry = _ml_lookup(iid)
+    if not entry:
+        return Response(status=302, headers={"Location": rpdb})
+    try:
+        url = entry[0]
+        parts = urllib.parse.urlsplit(url)
+        req = urllib.request.Request(
+            url, headers={"User-Agent": UA,
+                          "Referer": f"{parts.scheme}://{parts.hostname}/"})
+        with urllib.request.urlopen(req, timeout=20) as r:
+            data = r.read()
+        img = Image.open(io.BytesIO(data)).convert("RGB")
+        metrics = _strip_metrics(iid)
+        if metrics:
+            img = _draw_strip(img, metrics)
+        buf = io.BytesIO()
+        img.save(buf, "JPEG", quality=87)
+        out = buf.getvalue()
+    except Exception as e:
+        print(f"[mlposter] error {iid}: {e}", flush=True)
+        return Response(status=302, headers={"Location": rpdb})
+    with _ML_LOCK:
+        if len(_ML_CACHE) > 150:
+            for k in list(_ML_CACHE)[:75]:
+                _ML_CACHE.pop(k, None)
+        _ML_CACHE[iid] = out
+    return Response(out, mimetype="image/jpeg",
+                    headers={"Cache-Control": "public, max-age=604800"})
 
 
 # Poster proxy: fetches images from sites that block app User-Agents
