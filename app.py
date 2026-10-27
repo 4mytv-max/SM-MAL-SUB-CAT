@@ -655,7 +655,6 @@ def _to_meta(it, with_videos=False):
     disp = it["name"] + (f" / {it['name_ml']}" if it.get("name_ml") else "")
     labels = [SITE_LABEL[s] for s in it.get("sources", []) if s in SITE_LABEL]
     urls = "\n".join(it.get("post_urls", {}).values())
-    desc = (it.get("overview") or "")
     ob = it.get("omdb") or {}
     mb = it.get("mdb") or {}
     bits = []
@@ -679,12 +678,22 @@ def _to_meta(it, with_videos=False):
     _ld = _lang_display(it)
     if _ld:
         bits.append(f"🗣 Language: {_ld}")
+    # Ratings/info line FIRST (user 2026-10-27): Nuvio collapses the
+    # description behind "Show More", so the line must lead the text to
+    # be visible without expanding; the plot overview follows it.
+    _parts = []
     if bits:
-        desc += "\n\n" + "  •  ".join(bits)
+        _parts.append("  •  ".join(bits))
+    if it.get("overview"):
+        _parts.append(it["overview"])
+    _tail = ""
     if ob.get("actors") and ob["actors"] != "N/A":
-        desc += f"\n\n🎭 Cast: {ob['actors']}"
+        _tail += f"🎭 Cast: {ob['actors']}"
     if ob.get("director") and ob["director"] != "N/A":
-        desc += f"\n🎬 Director: {ob['director']}"
+        _tail += ("\n" if _tail else "") + f"🎬 Director: {ob['director']}"
+    if _tail:
+        _parts.append(_tail)
+    desc = "\n\n".join(_parts)
     desc += ("\n\n\U0001F4DD Malayalam subtitles: " + ", ".join(labels)
              if labels else "")
     if urls:
@@ -2012,7 +2021,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.9",
+        "version": "2.4.10",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
