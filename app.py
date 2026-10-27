@@ -19,6 +19,7 @@ import html
 import io
 import json
 import math
+import random
 import os
 import re
 import subprocess
@@ -694,6 +695,11 @@ def _to_meta(it, with_videos=False, detail=False):
     _parts = []
     if bits:
         _parts.append("  •  ".join(bits))
+    if labels:
+        # Subtitle source line directly under the info line (user
+        # 2026-10-27): whose Malayalam subtitle is available must be
+        # clear on the detail page without opening "Show More".
+        _parts.append("\U0001F4DD Malayalam Subtitle: " + ", ".join(labels))
     if it.get("overview"):
         _parts.append(it["overview"])
     _tail = ""
@@ -704,8 +710,6 @@ def _to_meta(it, with_videos=False, detail=False):
     if _tail:
         _parts.append(_tail)
     desc = "\n\n".join(_parts)
-    desc += ("\n\n\U0001F4DD Malayalam subtitles: " + ", ".join(labels)
-             if labels else "")
     if urls:
         desc += "\n" + urls
     # poster: RPDB rating posters for EVERY title that has an IMDb ID
@@ -2062,7 +2066,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.17",
+        "version": "2.4.18",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
@@ -2446,8 +2450,23 @@ def _ml_load():
                         rt = ob.get("rt")
                         if rt is None:
                             rt = mb.get("tomatoes")
-                        rats[iid] = (ob.get("imdbRating"),
-                                     ob.get("metascore"), rt)
+                        genre = (ob.get("genre")
+                                 or "").split(",")[0].strip()
+                        if not genre:
+                            gids = o.get("genre_ids") or []
+                            if gids:
+                                genre = TMDB_GENRES.get(gids[0], "")
+                        if genre == "Science Fiction":
+                            genre = "Sci-Fi"
+                        rats[iid] = {
+                            "imdb": ob.get("imdbRating"),
+                            "meta": ob.get("metascore"),
+                            "rt": rt,
+                            "audience": mb.get("audience"),
+                            "trakt": mb.get("trakt"),
+                            "letterboxd": mb.get("letterboxd"),
+                            "genre": genre,
+                        }
                     stack.extend(o.values())
                 elif isinstance(o, list):
                     stack.extend(o)
@@ -2461,18 +2480,27 @@ def _ml_lookup(iid):
     return (_ML_INDEX or {}).get(iid)
 
 
-def _strip_metrics(iid):
-    """RPDB-style strip entries in RPDB's order: IMDb, Metacritic, RT."""
+def _band_data(iid):
+    """(genre, entries) for the poster band: every rating we hold,
+    in display order, formatted as in the user-approved sample
+    (2026-10-27): IMDb x/10, Meta %, RT %, Audience %, Trakt %,
+    Letterboxd x/5 — one row, band appended BELOW the poster."""
     _ml_load()
-    r = (_ML_RATINGS or {}).get(iid) or (None, None, None)
-    out = []
-    if r[0] and r[0] != "N/A":
-        out.append(("imdb", f"{r[0]}/10"))
-    if r[1] and r[1] != "N/A":
-        out.append(("meta", f"{r[1]}%"))
-    if r[2] is not None:
-        out.append(("rt", f"{r[2]}%"))
-    return out
+    r = (_ML_RATINGS or {}).get(iid) or {}
+    entries = []
+    if r.get("imdb") and r["imdb"] != "N/A":
+        entries.append(("imdb", f"{r['imdb']}/10"))
+    if r.get("meta") and r["meta"] != "N/A":
+        entries.append(("meta", f"{r['meta']}%"))
+    if r.get("rt") is not None:
+        entries.append(("rt", f"{r['rt']}%"))
+    if r.get("audience") is not None:
+        entries.append(("audience", f"{r['audience']}%"))
+    if r.get("trakt") is not None:
+        entries.append(("trakt", f"{r['trakt']}%"))
+    if r.get("letterboxd") is not None:
+        entries.append(("letterboxd", f"{r['letterboxd']}/5"))
+    return r.get("genre") or "", entries
 
 
 def _strip_font(name, size):
@@ -2496,85 +2524,194 @@ def _fit_font(name, text, target_w, start):
     return _strip_font(name, 8)
 
 
-def _draw_strip(img, metrics):
-    """Draw an RPDB-copy rating strip (user 2026-10-27: 'RPDB same
-    copy'): solid dark band (27,30,37), IMDb yellow gradient box with
-    black text, Metacritic navy circle with yellow ring and white
-    italic m, RT tomato, white Liberation values, space-evenly
-    layout. Rendered supersampled for smooth icons."""
+def _draw_band(img, genre, entries):
+    """Append a dark band BELOW the poster and draw genre + every
+    rating with its agency symbol (user-approved sample design,
+    2026-10-27). One row; content scales down until it fits.
+    Poster pixels are never resized — full source clarity."""
+    BAND = (24, 26, 31)
     w, h = img.size
+    band_h = int(h * 0.098)
+    canvas = Image.new("RGB", (w, h + band_h), BAND)
+    canvas.paste(img.convert("RGB"), (0, 0))
     S = 3
-    band_h = max(36, int(h * 0.105))
     W, H = w * S, band_h * S
-    strip = Image.new("RGB", (W, H), (27, 30, 37))
-    d = ImageDraw.Draw(strip)
-    icon = int(H * 0.57)
-    cy = H // 2
-    val_font = _strip_font("LiberationSans-Regular.ttf", int(H * 0.52))
-    gap_iv = int(icon * 0.40)
-    groups = []
-    for kind, val in metrics:
-        tw = d.textlength(val, font=val_font)
-        groups.append((kind, val, icon + gap_iv + tw))
-    total = sum(g[2] for g in groups)
-    spacing = (W - total) / (len(groups) + 1)
-    x = spacing
-    for kind, val, gw in groups:
-        top = cy - icon // 2
-        if kind == "imdb":
-            box = Image.new("RGB", (icon, icon))
+
+    def render(fs_frac, use_entries):
+        strip = Image.new("RGB", (W, H), BAND)
+        d = ImageDraw.Draw(strip)
+        fs = H * fs_frac
+        f_genre = _strip_font("LiberationSans-Bold.ttf", fs)
+        f_val = _strip_font("LiberationSans-Bold.ttf", fs)
+        icon = fs * 1.12
+        cy = H // 2
+        pad = W * 0.040
+        gap_g = fs * 0.62
+        gap_iv = fs * 0.24
+
+        def text_w(s, f):
+            return d.textlength(s, font=f)
+
+        def text(x, s, f):
+            bb = d.textbbox((0, 0), s, font=f)
+            d.text((x, cy - (bb[3] - bb[1]) / 2 - bb[1]), s, font=f,
+                   fill=(255, 255, 255))
+            return text_w(s, f)
+
+        def imdb_box(x):
+            n = int(icon)
+            box = Image.new("RGB", (n, n))
             bd = ImageDraw.Draw(box)
             y1, y2 = (250, 214, 90), (245, 197, 24)
-            for yy in range(icon):
-                t = yy / max(1, icon - 1)
+            for yy in range(n):
+                t = yy / max(1, n - 1)
                 c = tuple(int(y1[i] + (y2[i] - y1[i]) * t) for i in range(3))
-                bd.line([(0, yy), (icon, yy)], fill=c)
-            mask = Image.new("L", (icon, icon), 0)
-            ImageDraw.Draw(mask).rounded_rectangle(
-                [0, 0, icon - 1, icon - 1], radius=int(icon * 0.16),
-                fill=255)
-            strip.paste(box, (int(x), top), mask)
+                bd.line([(0, yy), (n, yy)], fill=c)
             f = _fit_font("LiberationSans-Bold.ttf", "IMDb",
-                          icon * 0.80, int(icon * 0.62))
-            tw2 = d.textlength("IMDb", font=f)
-            bb = d.textbbox((0, 0), "IMDb", font=f)
-            d.text((x + (icon - tw2) / 2,
-                    cy - (bb[3] - bb[1]) / 2 - bb[1]),
-                   "IMDb", font=f, fill=(0, 0, 0))
-        elif kind == "meta":
+                          n * 0.82, int(n * 0.62))
+            bb = bd.textbbox((0, 0), "IMDb", font=f)
+            bd.text(((n - (bb[2] - bb[0])) / 2 - bb[0],
+                     (n - (bb[3] - bb[1])) / 2 - bb[1]),
+                    "IMDb", font=f, fill=(0, 0, 0))
+            mask = Image.new("L", (n, n), 0)
+            ImageDraw.Draw(mask).rounded_rectangle(
+                [0, 0, n - 1, n - 1], radius=int(n * 0.16), fill=255)
+            strip.paste(box, (int(x), int(cy - n / 2)), mask)
+
+        def meta_circle(x):
+            top = cy - icon / 2
             d.ellipse([x, top, x + icon, top + icon], fill=(255, 207, 61))
             r = max(2, int(icon * 0.055))
             d.ellipse([x + r, top + r, x + icon - r, top + icon - r],
                       fill=(13, 34, 64))
             f = _fit_font("LiberationSans-BoldItalic.ttf", "m",
                           icon * 0.68, int(icon * 0.85))
-            tw2 = d.textlength("m", font=f)
+            tw = d.textlength("m", font=f)
             bb = d.textbbox((0, 0), "m", font=f)
-            d.text((x + (icon - tw2) / 2,
-                    cy - (bb[3] - bb[1]) / 2 - bb[1]),
+            d.text((x + (icon - tw) / 2, cy - (bb[3] - bb[1]) / 2 - bb[1]),
                    "m", font=f, fill=(255, 255, 255))
-        elif kind == "rt":
-            th = int(icon * 0.88)
-            ty = cy - th // 2 + int(icon * 0.07)
+
+        def tomato(x):
+            th = icon * 0.86
+            ty = cy - th / 2 + icon * 0.06
             d.ellipse([x, ty, x + icon, ty + th], fill=(250, 50, 10))
-            ccx, ccy = x + icon / 2, ty + int(th * 0.10)
+            ccx, ccy = x + icon / 2, ty + th * 0.10
             pts = []
             for i in range(10):
                 ang = -math.pi / 2 + i * math.pi / 5
-                rad = int(icon * 0.27) if i % 2 == 0 else int(icon * 0.13)
+                rad = icon * 0.26 if i % 2 == 0 else icon * 0.12
                 pts.append((ccx + rad * math.cos(ang),
                             ccy + rad * math.sin(ang) * 0.62))
             d.polygon(pts, fill=(33, 171, 81))
-            d.rectangle([ccx - int(icon * 0.035), ty - int(icon * 0.10),
-                         ccx + int(icon * 0.035), ty + int(icon * 0.04)],
-                        fill=(33, 171, 81))
-        bb = d.textbbox((0, 0), val, font=val_font)
-        d.text((x + icon + gap_iv, cy - (bb[3] - bb[1]) / 2 - bb[1]),
-               val, font=val_font, fill=(255, 255, 255))
-        x += gw + spacing
+
+        def splat(x):
+            rnd = random.Random(7)
+            pts = []
+            for i in range(28):
+                ang = i * math.pi / 14
+                rad = icon * (0.46 if i % 2 == 0
+                              else 0.30 + rnd.random() * 0.08)
+                pts.append((x + icon / 2 + rad * math.cos(ang),
+                            cy + rad * math.sin(ang)))
+            d.polygon(pts, fill=(0, 190, 70))
+
+        def popcorn(x):
+            bw, bh = icon * 0.95, icon * 0.92
+            bx, by = x + (icon - bw) / 2, cy - bh / 2
+            for (px, py, pr) in ((0.24, 0.10, 0.21), (0.50, 0.02, 0.25),
+                                 (0.76, 0.10, 0.21), (0.37, 0.18, 0.20),
+                                 (0.63, 0.18, 0.20)):
+                d.ellipse([bx + bw * px - bw * pr, by + bh * py - bw * pr,
+                           bx + bw * px + bw * pr, by + bh * py + bw * pr],
+                          fill=(255, 236, 170))
+            top_w, bot_w = bw, bw * 0.72
+            x0 = bx + (bw - top_w) / 2
+            x3 = bx + (bw - bot_w) / 2
+            y0, y1 = by + bh * 0.26, by + bh
+            d.polygon([(x0, y0), (x0 + top_w, y0),
+                       (x3 + bot_w, y1), (x3, y1)], fill=(245, 245, 245))
+            for i in range(3):
+                t0, t1 = 0.16 + i * 0.28, 0.30 + i * 0.28
+                d.polygon([(x0 + top_w * t0, y0), (x0 + top_w * t1, y0),
+                           (x3 + bot_w * t1, y1), (x3 + bot_w * t0, y1)],
+                          fill=(230, 40, 40))
+
+        def trakt_box(x):
+            n = int(icon)
+            mask = Image.new("L", (n, n), 0)
+            ImageDraw.Draw(mask).rounded_rectangle(
+                [0, 0, n - 1, n - 1], radius=int(n * 0.18), fill=255)
+            box = Image.new("RGB", (n, n), (237, 28, 36))
+            strip.paste(box, (int(x), int(cy - n / 2)), mask)
+            lw = max(3, int(n * 0.13))
+            pts = [(x + n * 0.26, cy + n * 0.02),
+                   (x + n * 0.43, cy + n * 0.20),
+                   (x + n * 0.76, cy - n * 0.24)]
+            d.line(pts, fill=(255, 255, 255), width=lw, joint="curve")
+            for (px, py) in (pts[0], pts[-1]):
+                d.ellipse([px - lw / 2, py - lw / 2,
+                           px + lw / 2, py + lw / 2],
+                          fill=(255, 255, 255))
+
+        def letterboxd(x):
+            dd = icon * 0.52
+            gap = icon * 0.10
+            total = dd * 3 + gap * 2
+            sx = x + (icon * 1.6 - total) / 2
+            for i, col in enumerate(((255, 128, 0), (0, 224, 84),
+                                     (64, 188, 244))):
+                cx0 = sx + i * (dd + gap)
+                d.ellipse([cx0, cy - dd / 2, cx0 + dd, cy + dd / 2],
+                          fill=col)
+            return icon * 1.6
+
+        ICON_W = {"imdb": lambda: icon, "meta": lambda: icon,
+                  "rt": lambda: icon, "audience": lambda: icon,
+                  "trakt": lambda: icon, "letterboxd": lambda: icon * 1.6}
+        DRAW = {"imdb": imdb_box, "meta": meta_circle,
+                "audience": popcorn, "trakt": trakt_box,
+                "letterboxd": letterboxd}
+
+        def draw_rt(x, val):
+            tomato(x) if val >= 60 else splat(x)
+
+        total = pad
+        if genre:
+            total += text_w(genre, f_genre) + gap_g
+        for kind, val in use_entries:
+            total += ICON_W[kind]() + gap_iv + text_w(val, f_val) + gap_g
+        return strip, total, (text, DRAW, draw_rt, ICON_W, pad, gap_g,
+                              gap_iv, f_genre, f_val)
+
+    entries = list(entries)
+    frac = 0.46
+    while True:
+        strip, total, ctx = render(frac, entries)
+        if total <= W * 0.98 or frac <= 0.13:
+            break
+        frac -= 0.02
+    text, DRAW, draw_rt, ICON_W, pad, gap_g, gap_iv, f_genre, f_val = ctx
+    d = ImageDraw.Draw(strip)
+    x = pad
+    if genre:
+        bb = d.textbbox((0, 0), genre, font=f_genre)
+        d.text((x, H // 2 - (bb[3] - bb[1]) / 2 - bb[1]), genre,
+               font=f_genre, fill=(255, 255, 255))
+        x += d.textlength(genre, font=f_genre) + gap_g
+    for kind, val in entries:
+        if kind == "rt":
+            draw_rt(x, float(val.rstrip("%")))
+        else:
+            DRAW[kind](x)
+        x += ICON_W[kind]() + gap_iv
+        bb = d.textbbox((0, 0), val, font=f_val)
+        d.text((x, H // 2 - (bb[3] - bb[1]) / 2 - bb[1]), val,
+               font=f_val, fill=(255, 255, 255))
+        x += d.textlength(val, font=f_val) + gap_g
     strip = strip.resize((w, band_h), Image.LANCZOS)
-    img.paste(strip, (0, h - band_h))
-    return img
+    canvas.paste(strip, (0, h))
+    return canvas
+
 
 
 @app.route("/mlposter/<iid>.jpg")
@@ -2600,11 +2737,11 @@ def mlposter(iid):
         with urllib.request.urlopen(req, timeout=20) as r:
             data = r.read()
         img = Image.open(io.BytesIO(data)).convert("RGB")
-        metrics = _strip_metrics(iid)
-        if metrics:
-            img = _draw_strip(img, metrics)
+        genre, entries = _band_data(iid)
+        if genre or entries:
+            img = _draw_band(img, genre, entries)
         buf = io.BytesIO()
-        img.save(buf, "JPEG", quality=87)
+        img.save(buf, "JPEG", quality=93)
         out = buf.getvalue()
     except Exception as e:
         print(f"[mlposter] error {iid}: {e}", flush=True)
