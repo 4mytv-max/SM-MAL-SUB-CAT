@@ -666,6 +666,11 @@ def _to_meta(it, with_videos=False):
         bits.append(f"🍅 Rotten Tomatoes: {ob['rt']}%")
     if ob.get("metascore") and ob["metascore"] != "N/A":
         bits.append(f"Metascore: {ob['metascore']}")
+    mb = it.get("mdb") or {}
+    if mb.get("trakt") is not None:
+        bits.append(f"Trakt: {mb['trakt']}")
+    if mb.get("letterboxd") is not None:
+        bits.append(f"Letterboxd: {mb['letterboxd']}/5")
     if ob.get("runtime") and ob["runtime"] != "N/A":
         bits.append(f"⏱ {ob['runtime']}")
     _ld = _lang_display(it)
@@ -1089,6 +1094,7 @@ def _full_mm_items():
                         "genre_ids": it.get("genre_ids") or [],
                         "sources": ["mm"],
                         "omdb": it.get("omdb"),
+                        "mdb": it.get("mdb"),
                         "post_urls": {"mm": it.get("post_url", "")},
                     })
     except Exception:
@@ -1116,6 +1122,7 @@ def _full_goat_items():
                         "genre_ids": it.get("genre_ids") or [],
                         "sources": ["goat"],
                         "omdb": it.get("omdb"),
+                        "mdb": it.get("mdb"),
                         "lang": it.get("language"),
                         "post_urls": {"goat": it.get("post_url", "")},
                     })
@@ -1144,6 +1151,7 @@ def _full_msone_items():
                     "genre_ids": it.get("genre_ids") or [],
                     "sources": ["msone"],
                     "omdb": it.get("omdb"),
+                        "mdb": it.get("mdb"),
                     "post_urls": {"msone": it.get("post_url", "")},
                 })
     except Exception:
@@ -2001,7 +2009,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.7",
+        "version": "2.4.8",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
