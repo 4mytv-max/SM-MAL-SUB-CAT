@@ -775,6 +775,11 @@ def _to_meta(it, with_videos=False, detail=False):
         "genres": [TMDB_GENRES[g] for g in (it.get("genre_ids") or [])
                    if g in TMDB_GENRES],
     }
+    if iid and _PIL_OK and it.get("backdrop_path") and _ml_lookup(iid):
+        # Banded landscape backdrop (full rating set) for titles
+        # with Malayalam-poster coverage.
+        meta["background"] = ("https://sm-mal-sub-cat-pyx0.onrender.com"
+                              f"/00/mlbg/{iid}.jpg")
     if not meta["genres"] and ob.get("genre") and ob["genre"] != "N/A":
         meta["genres"] = [g.strip() for g in ob["genre"].split(",")
                            if g.strip()]
@@ -2066,7 +2071,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.18",
+        "version": "2.4.19",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
@@ -2416,14 +2421,16 @@ def goatmm_srt(src, key):
 _ML_INDEX = None
 _ML_RATINGS = None
 _ML_CACHE = {}
+_MLBG_CACHE = {}
+_ML_BG = None
 _ML_LOCK = threading.Lock()
 
 
 def _ml_load():
-    global _ML_INDEX, _ML_RATINGS
+    global _ML_INDEX, _ML_RATINGS, _ML_BG
     if _ML_INDEX is not None:
         return
-    idx, rats = {}, {}
+    idx, rats, bgidx = {}, {}, {}
     try:
         import glob as _glob
         base = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -2442,6 +2449,9 @@ def _ml_load():
                         _m = re.search(r"tt\d{7,}",
                                        str(o.get("card_id") or ""))
                         iid = _m.group(0) if _m else None
+                    if iid and o.get("backdrop_path") \
+                            and iid not in bgidx:
+                        bgidx[iid] = o["backdrop_path"]
                     if o.get("ml_poster") and iid and iid not in idx:
                         idx[iid] = (o["ml_poster"], o.get("ml_src") or "")
                     if iid and iid not in rats:
@@ -2473,11 +2483,17 @@ def _ml_load():
     except Exception:
         pass
     _ML_INDEX, _ML_RATINGS = idx, rats
+    _ML_BG = bgidx
 
 
 def _ml_lookup(iid):
     _ml_load()
     return (_ML_INDEX or {}).get(iid)
+
+
+def _ml_bg_lookup(iid):
+    _ml_load()
+    return (_ML_BG or {}).get(iid)
 
 
 def _band_data(iid):
@@ -2738,6 +2754,10 @@ def mlposter(iid):
             data = r.read()
         img = Image.open(io.BytesIO(data)).convert("RGB")
         genre, entries = _band_data(iid)
+        # Portrait cards: Genre + IMDb + Meta + RT only (user
+        # 2026-10-27); the full set lives on the landscape backdrop.
+        entries = [e for e in entries
+                   if e[0] in ("imdb", "meta", "rt")]
         if genre or entries:
             img = _draw_band(img, genre, entries)
         buf = io.BytesIO()
@@ -2751,6 +2771,47 @@ def mlposter(iid):
             for k in list(_ML_CACHE)[:75]:
                 _ML_CACHE.pop(k, None)
         _ML_CACHE[iid] = out
+    return Response(out, mimetype="image/jpeg",
+                    headers={"Cache-Control": "public, max-age=604800"})
+
+
+@app.route("/mlbg/<iid>.jpg")
+def mlbg(iid):
+    """Landscape backdrop with the FULL rating band below it
+    (user 2026-10-27): Genre + IMDb + Meta + RT + Audience +
+    Trakt + Letterboxd. Portrait cards carry the short set."""
+    plain = None
+    if not _PIL_OK or not re.fullmatch(r"tt\d{7,}", iid or ""):
+        return Response(status=404)
+    bp = _ml_bg_lookup(iid)
+    if bp:
+        plain = f"https://image.tmdb.org/t/p/w1280{bp}"
+    if not plain:
+        return Response(status=404)
+    with _ML_LOCK:
+        hit = _MLBG_CACHE.get(iid)
+    if hit:
+        return Response(hit, mimetype="image/jpeg",
+                        headers={"Cache-Control": "public, max-age=604800"})
+    try:
+        req = urllib.request.Request(plain, headers={"User-Agent": UA})
+        with urllib.request.urlopen(req, timeout=20) as r:
+            data = r.read()
+        img = Image.open(io.BytesIO(data)).convert("RGB")
+        genre, entries = _band_data(iid)
+        if genre or entries:
+            img = _draw_band(img, genre, entries)
+        buf = io.BytesIO()
+        img.save(buf, "JPEG", quality=93)
+        out = buf.getvalue()
+    except Exception as e:
+        print(f"[mlbg] error {iid}: {e}", flush=True)
+        return Response(status=302, headers={"Location": plain})
+    with _ML_LOCK:
+        if len(_MLBG_CACHE) > 40:
+            for k in list(_MLBG_CACHE)[:20]:
+                _MLBG_CACHE.pop(k, None)
+        _MLBG_CACHE[iid] = out
     return Response(out, mimetype="image/jpeg",
                     headers={"Cache-Control": "public, max-age=604800"})
 
