@@ -660,8 +660,11 @@ def _to_meta(it, with_videos=False):
     bits = []
     if ob.get("imdbRating") and ob["imdbRating"] != "N/A":
         bits.append(f"⭐ IMDb: {ob['imdbRating']}/10")
-    if ob.get("rated") and ob["rated"] != "N/A":
-        bits.append(f"Age: {ob['rated']}")
+    _age = ob.get("rated")
+    if not _age or _age == "N/A":
+        _age = it.get("cert")  # TMDB certification fill (2026-10-27)
+    if _age and _age != "N/A":
+        bits.append(f"Age: {_age}")
     _rt = ob.get("rt") if ob.get("rt") is not None else mb.get("tomatoes")
     if _rt is not None:
         bits.append(f"🍅 Rotten Tomatoes: {_rt}%")
@@ -1119,6 +1122,7 @@ def _full_mm_items():
                         "sources": ["mm"],
                         "omdb": it.get("omdb"),
                         "mdb": it.get("mdb"),
+                        "cert": it.get("cert"),
                         "post_urls": {"mm": it.get("post_url", "")},
                     })
     except Exception:
@@ -1147,6 +1151,7 @@ def _full_goat_items():
                         "sources": ["goat"],
                         "omdb": it.get("omdb"),
                         "mdb": it.get("mdb"),
+                        "cert": it.get("cert"),
                         "lang": it.get("language"),
                         "post_urls": {"goat": it.get("post_url", "")},
                     })
@@ -1176,6 +1181,7 @@ def _full_msone_items():
                     "sources": ["msone"],
                     "omdb": it.get("omdb"),
                         "mdb": it.get("mdb"),
+                    "cert": it.get("cert"),
                     "post_urls": {"msone": it.get("post_url", "")},
                 })
     except Exception:
@@ -1302,6 +1308,7 @@ def _live_mm_releases():
                     "genre_ids": [],
                     "sources": ["mm"],
                     "omdb": dit.get("omdb"),
+                    "cert": dit.get("cert"),
                     "post_urls": {"mm": link},
                 })
         except Exception:
@@ -2033,7 +2040,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.13",
+        "version": "2.4.14",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
