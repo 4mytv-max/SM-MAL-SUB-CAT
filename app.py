@@ -707,7 +707,17 @@ def _to_meta(it, with_videos=False):
     }
     poster = None
     if it.get("poster_path"):
-        poster = _img(POSTER, it['poster_path'])
+        # RPDB rating posters (user 2026-10-27): when a real TMDB poster
+        # exists and the title has an IMDb ID, serve the RPDB poster so
+        # IMDb / Metacritic / Rotten Tomatoes ratings are baked onto the
+        # poster itself (free public RPDB key, same as the user's
+        # Xperience setup); ?fallback=true returns the plain poster
+        # when RPDB has none for the title.
+        if it.get("imdb_id"):
+            poster = ("https://api.ratingposterdb.com/t0-free-rpdb/imdb/"
+                      f"poster-default/{it['imdb_id']}.jpg?fallback=true")
+        else:
+            poster = _img(POSTER, it['poster_path'])
     elif it.get("poster_url"):
         purl = it["poster_url"]
         if "moviemirrorsubtitles.com" in purl:
@@ -2021,7 +2031,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.10",
+        "version": "2.4.11",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
