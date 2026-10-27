@@ -698,41 +698,43 @@ def _to_meta(it, with_videos=False):
              if labels else "")
     if urls:
         desc += "\n" + urls
-    # poster: TMDB path first, then direct URL (GOAT homepage / MM site)
-    # MM site blocks app User-Agents -> route via /poster/ proxy
+    # poster: RPDB rating posters for EVERY title that has an IMDb ID
+    # (user rule 2026-10-27, stated firmly: ALL posters in this addon
+    # carry ratings - no exceptions by source or row). ?fallback=true
+    # returns the plain TMDB poster when RPDB has no rated version.
+    # Source builders embed the IMDb ID in card_id even when the item
+    # dict itself has no "imdb_id" key, so recover it from there too.
     # Hardcoded site posters for items without TMDB (user 2026-10-12)
+    # stay first: they are manual fixes for titles with no IMDb ID.
+    # MM site blocks app User-Agents -> route via /poster/ proxy.
     SITE_POSTERS = {
         "strait of hormuz": "https://moviemirrorsubtitles.com/wp-content/uploads/2026/05/IMG-20260508-WA0298-scaled.jpg",
         "fall 2: deadpoint": "https://malayalamsubtitles.org/wp-content/uploads/2026/10/Fall-2-2026-A.jpg",
     }
+    iid = it.get("imdb_id")
+    if not iid:
+        _m = re.search(r"tt\d{7,}", str(it.get("card_id") or ""))
+        if _m:
+            iid = _m.group(0)
     poster = None
-    if it.get("poster_path"):
-        # RPDB rating posters (user 2026-10-27): when a real TMDB poster
-        # exists and the title has an IMDb ID, serve the RPDB poster so
-        # IMDb / Metacritic / Rotten Tomatoes ratings are baked onto the
-        # poster itself (free public RPDB key, same as the user's
-        # Xperience setup); ?fallback=true returns the plain poster
-        # when RPDB has none for the title.
-        if it.get("imdb_id"):
-            poster = ("https://api.ratingposterdb.com/t0-free-rpdb/imdb/"
-                      f"poster-default/{it['imdb_id']}.jpg?fallback=true")
-        else:
-            poster = _img(POSTER, it['poster_path'])
-    elif it.get("poster_url"):
+    name_lower = (it.get("name") or "").lower()
+    for key, purl in SITE_POSTERS.items():
+        if key in name_lower:
+            proxy_base = "https://sm-mal-sub-cat-pyx0.onrender.com/00"
+            poster = f"{proxy_base}/poster/?url={urllib.parse.quote(purl, safe='')}"
+            break
+    if poster is None and iid:
+        poster = ("https://api.ratingposterdb.com/t0-free-rpdb/imdb/"
+                  f"poster-default/{iid}.jpg?fallback=true")
+    if poster is None and it.get("poster_path"):
+        poster = _img(POSTER, it['poster_path'])
+    if poster is None and it.get("poster_url"):
         purl = it["poster_url"]
         if "moviemirrorsubtitles.com" in purl:
             proxy_base = "https://sm-mal-sub-cat-pyx0.onrender.com/00"
             poster = f"{proxy_base}/poster/?url={urllib.parse.quote(purl, safe='')}"
         else:
             poster = purl
-    else:
-        # Check hardcoded site posters
-        name_lower = (it.get("name") or "").lower()
-        for key, purl in SITE_POSTERS.items():
-            if key in name_lower:
-                proxy_base = "https://sm-mal-sub-cat-pyx0.onrender.com/00"
-                poster = f"{proxy_base}/poster/?url={urllib.parse.quote(purl, safe='')}"
-                break
     meta = {
         "id": it["card_id"],
         "type": "movie" if it["media"] == "movie" else "series",
@@ -2031,7 +2033,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.11",
+        "version": "2.4.12",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
