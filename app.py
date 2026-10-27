@@ -657,16 +657,19 @@ def _to_meta(it, with_videos=False):
     urls = "\n".join(it.get("post_urls", {}).values())
     desc = (it.get("overview") or "")
     ob = it.get("omdb") or {}
+    mb = it.get("mdb") or {}
     bits = []
     if ob.get("imdbRating") and ob["imdbRating"] != "N/A":
         bits.append(f"⭐ IMDb: {ob['imdbRating']}/10")
     if ob.get("rated") and ob["rated"] not in ("N/A", "Not Rated", "Unrated"):
         bits.append(f"Age: {ob['rated']}")
-    if ob.get("rt") is not None:
-        bits.append(f"🍅 Rotten Tomatoes: {ob['rt']}%")
+    _rt = ob.get("rt") if ob.get("rt") is not None else mb.get("tomatoes")
+    if _rt is not None:
+        bits.append(f"🍅 Rotten Tomatoes: {_rt}%")
+    if mb.get("audience") is not None:
+        bits.append(f"🍿 Audience: {mb['audience']}%")
     if ob.get("metascore") and ob["metascore"] != "N/A":
         bits.append(f"Metascore: {ob['metascore']}")
-    mb = it.get("mdb") or {}
     if mb.get("trakt") is not None:
         bits.append(f"Trakt: {mb['trakt']}")
     if mb.get("letterboxd") is not None:
@@ -2009,7 +2012,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.8",
+        "version": "2.4.9",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
