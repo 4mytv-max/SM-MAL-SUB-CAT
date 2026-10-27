@@ -2062,7 +2062,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.16",
+        "version": "2.4.17",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
@@ -2508,10 +2508,10 @@ def _draw_strip(img, metrics):
     W, H = w * S, band_h * S
     strip = Image.new("RGB", (W, H), (27, 30, 37))
     d = ImageDraw.Draw(strip)
-    icon = int(H * 0.70)
+    icon = int(H * 0.57)
     cy = H // 2
-    val_font = _strip_font("LiberationSans-Regular.ttf", int(H * 0.60))
-    gap_iv = int(icon * 0.22)
+    val_font = _strip_font("LiberationSans-Regular.ttf", int(H * 0.52))
+    gap_iv = int(icon * 0.40)
     groups = []
     for kind, val in metrics:
         tw = d.textlength(val, font=val_font)
@@ -2543,11 +2543,11 @@ def _draw_strip(img, metrics):
                    "IMDb", font=f, fill=(0, 0, 0))
         elif kind == "meta":
             d.ellipse([x, top, x + icon, top + icon], fill=(255, 207, 61))
-            r = max(2, int(icon * 0.07))
+            r = max(2, int(icon * 0.055))
             d.ellipse([x + r, top + r, x + icon - r, top + icon - r],
                       fill=(13, 34, 64))
             f = _fit_font("LiberationSans-BoldItalic.ttf", "m",
-                          icon * 0.62, int(icon * 0.78))
+                          icon * 0.68, int(icon * 0.85))
             tw2 = d.textlength("m", font=f)
             bb = d.textbbox((0, 0), "m", font=f)
             d.text((x + (icon - tw2) / 2,
@@ -2561,7 +2561,7 @@ def _draw_strip(img, metrics):
             pts = []
             for i in range(10):
                 ang = -math.pi / 2 + i * math.pi / 5
-                rad = int(icon * 0.30) if i % 2 == 0 else int(icon * 0.13)
+                rad = int(icon * 0.27) if i % 2 == 0 else int(icon * 0.13)
                 pts.append((ccx + rad * math.cos(ang),
                             ccy + rad * math.sin(ang) * 0.62))
             d.polygon(pts, fill=(33, 171, 81))
