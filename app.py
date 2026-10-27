@@ -615,6 +615,42 @@ def _series_videos(it):
     return None
 
 
+_LANG_ML_EN = {
+    "കൊറിയൻ": "Korean", "ഇംഗ്ലീഷ്": "English", "ഹിന്ദി": "Hindi",
+    "ജാപ്പനീസ്": "Japanese", "സ്പാനിഷ്": "Spanish", "തെലുങ്ക്": "Telugu",
+    "മാൻഡറിൻ": "Mandarin", "കൻ്റോണീസ്": "Cantonese", "ഫ്രഞ്ച്": "French",
+    "തായ്": "Thai", "ഇറ്റാലിയൻ": "Italian", "റഷ്യൻ": "Russian",
+    "ടർക്കിഷ്": "Turkish", "അറബി": "Arabic", "കന്നഡ": "Kannada",
+    "മറാത്തി": "Marathi", "ഇന്തോനേഷ്യൻ": "Indonesian",
+    "ടാഗലോഗ്": "Tagalog", "ചൈനീസ്": "Chinese", "നോർവീജിയൻ": "Norwegian",
+    "ഗുജറാത്തി": "Gujarati", "ചെക്ക്": "Czech", "സെർബിയൻ": "Serbian",
+    "ഫിലിപ്പിനോ": "Filipino", "റൊമേനിയൻ": "Romanian",
+    "സ്വീഡിഷ്": "Swedish", "പോളിഷ്": "Polish",
+    "ഉക്രൈയ്നിയൻ": "Ukrainian", "പേർഷ്യൻ": "Persian", "സോങ്ക": "Dzongkha",
+}
+
+
+def _lang_display(it):
+    """Original-language display name for the meta info line: from the
+    mega `lang` slug, a GOAT Malayalam language label, an OMDb language
+    string, or the Msone post URL's /languages/<slug>/ segment."""
+    ob = it.get("omdb") or {}
+    lang = it.get("lang") or it.get("language") or ob.get("language")
+    if lang:
+        lang = str(lang).strip()
+        if lang in _LANG_ML_EN:
+            return _LANG_ML_EN[lang]
+        if all(ord(c) < 128 for c in lang):
+            first = lang.split(",")[0].strip()
+            return first if first[:1].isupper() else first.capitalize()
+        return lang
+    for u in list((it.get("post_urls") or {}).values()) + [it.get("post_url") or ""]:
+        m = re.search(r"/languages/([^/]+)/", u or "")
+        if m:
+            return m.group(1).replace("-", " ").title()
+    return None
+
+
 def _to_meta(it, with_videos=False):
     disp = it["name"] + (f" / {it['name_ml']}" if it.get("name_ml") else "")
     labels = [SITE_LABEL[s] for s in it.get("sources", []) if s in SITE_LABEL]
@@ -624,14 +660,17 @@ def _to_meta(it, with_videos=False):
     bits = []
     if ob.get("imdbRating") and ob["imdbRating"] != "N/A":
         bits.append(f"⭐ IMDb: {ob['imdbRating']}/10")
+    if ob.get("rated") and ob["rated"] not in ("N/A", "Not Rated", "Unrated"):
+        bits.append(f"Age: {ob['rated']}")
     if ob.get("rt") is not None:
         bits.append(f"🍅 Rotten Tomatoes: {ob['rt']}%")
     if ob.get("metascore") and ob["metascore"] != "N/A":
         bits.append(f"Metascore: {ob['metascore']}")
     if ob.get("runtime") and ob["runtime"] != "N/A":
         bits.append(f"⏱ {ob['runtime']}")
-    if ob.get("rated") and ob["rated"] not in ("N/A", "Not Rated", "Unrated"):
-        bits.append(f"Rated: {ob['rated']}")
+    _ld = _lang_display(it)
+    if _ld:
+        bits.append(f"🗣 Language: {_ld}")
     if bits:
         desc += "\n\n" + "  •  ".join(bits)
     if ob.get("actors") and ob["actors"] != "N/A":
@@ -1077,6 +1116,7 @@ def _full_goat_items():
                         "genre_ids": it.get("genre_ids") or [],
                         "sources": ["goat"],
                         "omdb": it.get("omdb"),
+                        "lang": it.get("language"),
                         "post_urls": {"goat": it.get("post_url", "")},
                     })
     except Exception:
@@ -1961,7 +2001,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.6",
+        "version": "2.4.7",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
