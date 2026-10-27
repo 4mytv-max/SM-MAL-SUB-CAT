@@ -18,6 +18,7 @@ Routes:
 import html
 import io
 import json
+import math
 import os
 import re
 import subprocess
@@ -2061,7 +2062,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.15",
+        "version": "2.4.16",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
@@ -2461,50 +2462,118 @@ def _ml_lookup(iid):
 
 
 def _strip_metrics(iid):
+    """RPDB-style strip entries in RPDB's order: IMDb, Metacritic, RT."""
     _ml_load()
     r = (_ML_RATINGS or {}).get(iid) or (None, None, None)
     out = []
     if r[0] and r[0] != "N/A":
-        out.append(("IMDb", f"{r[0]}/10", (245, 197, 24)))
-    if r[2] is not None:
-        out.append(("RT", f"{r[2]}%", (250, 50, 10)))
+        out.append(("imdb", f"{r[0]}/10"))
     if r[1] and r[1] != "N/A":
-        out.append(("Meta", str(r[1]), (102, 204, 51)))
+        out.append(("meta", f"{r[1]}%"))
+    if r[2] is not None:
+        out.append(("rt", f"{r[2]}%"))
     return out
 
 
+def _strip_font(name, size):
+    base = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "static")
+    for cand in (name, "DejaVuSans-Bold.ttf"):
+        try:
+            return ImageFont.truetype(os.path.join(base, cand), size)
+        except Exception:
+            continue
+    return ImageFont.load_default()
+
+
+def _fit_font(name, text, target_w, start):
+    size = start
+    while size > 8:
+        f = _strip_font(name, size)
+        if f.getlength(text) <= target_w:
+            return f
+        size -= 2
+    return _strip_font(name, 8)
+
+
 def _draw_strip(img, metrics):
+    """Draw an RPDB-copy rating strip (user 2026-10-27: 'RPDB same
+    copy'): solid dark band (27,30,37), IMDb yellow gradient box with
+    black text, Metacritic navy circle with yellow ring and white
+    italic m, RT tomato, white Liberation values, space-evenly
+    layout. Rendered supersampled for smooth icons."""
     w, h = img.size
-    band_h = max(34, int(h * 0.085))
-    font_size = max(13, int(band_h * 0.48))
-    try:
-        font = ImageFont.truetype(
-            os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                         "static", "DejaVuSans-Bold.ttf"), font_size)
-    except Exception:
-        font = ImageFont.load_default()
-    draw = ImageDraw.Draw(img, "RGBA")
-    draw.rectangle([0, h - band_h, w, h], fill=(0, 0, 0, 205))
-    parts = []
-    total = 0.0
-    for label, val, color in metrics:
-        text = f"{label} {val}"
-        tw = draw.textlength(text, font=font)
-        parts.append((label, val, color, tw))
-        total += tw
-    gap = font_size * 0.9
-    total += gap * (len(parts) - 1)
-    x = (w - total) / 2
-    # Center by the real glyph box: PIL's default anchor puts the
-    # ascent line at y, so font_size alone mis-centers the text and
-    # clips it on small posters (found on the 300px GOAT posters).
-    _bb = draw.textbbox((0, 0), "IMDb 0.0/10", font=font)
-    y = h - band_h + (band_h - (_bb[3] - _bb[1])) / 2 - _bb[1]
-    for label, val, color, tw in parts:
-        draw.text((x, y), label + " ", fill=color + (255,), font=font)
-        lw = draw.textlength(label + " ", font=font)
-        draw.text((x + lw, y), val, fill=(255, 255, 255, 255), font=font)
-        x += tw + gap
+    S = 3
+    band_h = max(36, int(h * 0.105))
+    W, H = w * S, band_h * S
+    strip = Image.new("RGB", (W, H), (27, 30, 37))
+    d = ImageDraw.Draw(strip)
+    icon = int(H * 0.70)
+    cy = H // 2
+    val_font = _strip_font("LiberationSans-Regular.ttf", int(H * 0.60))
+    gap_iv = int(icon * 0.22)
+    groups = []
+    for kind, val in metrics:
+        tw = d.textlength(val, font=val_font)
+        groups.append((kind, val, icon + gap_iv + tw))
+    total = sum(g[2] for g in groups)
+    spacing = (W - total) / (len(groups) + 1)
+    x = spacing
+    for kind, val, gw in groups:
+        top = cy - icon // 2
+        if kind == "imdb":
+            box = Image.new("RGB", (icon, icon))
+            bd = ImageDraw.Draw(box)
+            y1, y2 = (250, 214, 90), (245, 197, 24)
+            for yy in range(icon):
+                t = yy / max(1, icon - 1)
+                c = tuple(int(y1[i] + (y2[i] - y1[i]) * t) for i in range(3))
+                bd.line([(0, yy), (icon, yy)], fill=c)
+            mask = Image.new("L", (icon, icon), 0)
+            ImageDraw.Draw(mask).rounded_rectangle(
+                [0, 0, icon - 1, icon - 1], radius=int(icon * 0.16),
+                fill=255)
+            strip.paste(box, (int(x), top), mask)
+            f = _fit_font("LiberationSans-Bold.ttf", "IMDb",
+                          icon * 0.80, int(icon * 0.62))
+            tw2 = d.textlength("IMDb", font=f)
+            bb = d.textbbox((0, 0), "IMDb", font=f)
+            d.text((x + (icon - tw2) / 2,
+                    cy - (bb[3] - bb[1]) / 2 - bb[1]),
+                   "IMDb", font=f, fill=(0, 0, 0))
+        elif kind == "meta":
+            d.ellipse([x, top, x + icon, top + icon], fill=(255, 207, 61))
+            r = max(2, int(icon * 0.07))
+            d.ellipse([x + r, top + r, x + icon - r, top + icon - r],
+                      fill=(13, 34, 64))
+            f = _fit_font("LiberationSans-BoldItalic.ttf", "m",
+                          icon * 0.62, int(icon * 0.78))
+            tw2 = d.textlength("m", font=f)
+            bb = d.textbbox((0, 0), "m", font=f)
+            d.text((x + (icon - tw2) / 2,
+                    cy - (bb[3] - bb[1]) / 2 - bb[1]),
+                   "m", font=f, fill=(255, 255, 255))
+        elif kind == "rt":
+            th = int(icon * 0.88)
+            ty = cy - th // 2 + int(icon * 0.07)
+            d.ellipse([x, ty, x + icon, ty + th], fill=(250, 50, 10))
+            ccx, ccy = x + icon / 2, ty + int(th * 0.10)
+            pts = []
+            for i in range(10):
+                ang = -math.pi / 2 + i * math.pi / 5
+                rad = int(icon * 0.30) if i % 2 == 0 else int(icon * 0.13)
+                pts.append((ccx + rad * math.cos(ang),
+                            ccy + rad * math.sin(ang) * 0.62))
+            d.polygon(pts, fill=(33, 171, 81))
+            d.rectangle([ccx - int(icon * 0.035), ty - int(icon * 0.10),
+                         ccx + int(icon * 0.035), ty + int(icon * 0.04)],
+                        fill=(33, 171, 81))
+        bb = d.textbbox((0, 0), val, font=val_font)
+        d.text((x + icon + gap_iv, cy - (bb[3] - bb[1]) / 2 - bb[1]),
+               val, font=val_font, fill=(255, 255, 255))
+        x += gw + spacing
+    strip = strip.resize((w, band_h), Image.LANCZOS)
+    img.paste(strip, (0, h - band_h))
     return img
 
 
