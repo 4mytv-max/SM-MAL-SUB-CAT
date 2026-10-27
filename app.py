@@ -660,7 +660,7 @@ def _to_meta(it, with_videos=False):
     bits = []
     if ob.get("imdbRating") and ob["imdbRating"] != "N/A":
         bits.append(f"⭐ IMDb: {ob['imdbRating']}/10")
-    if ob.get("rated") and ob["rated"] not in ("N/A", "Not Rated", "Unrated"):
+    if ob.get("rated") and ob["rated"] != "N/A":
         bits.append(f"Age: {ob['rated']}")
     _rt = ob.get("rt") if ob.get("rt") is not None else mb.get("tomatoes")
     if _rt is not None:
@@ -2033,7 +2033,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.12",
+        "version": "2.4.13",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
