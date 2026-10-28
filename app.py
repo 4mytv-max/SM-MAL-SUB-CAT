@@ -1458,7 +1458,11 @@ def _status_meta(detail=False):
         "id": "smcs:status",
         "type": "movie",
         "name": "Catalog Status",
-        "poster": f"{_STATUS_BASE}/status/poster.jpg",
+        # Strip, not a portrait poster (user 2026-10-28): the wide
+        # landscape image is the poster, flagged posterShape=landscape
+        # so clients render it as a full-width strip tile in the row.
+        "poster": f"{_STATUS_BASE}/status/strip.jpg",
+        "posterShape": "landscape",
         "background": f"{_STATUS_BASE}/status/strip.jpg",
         "description": desc,
     }
@@ -2248,7 +2252,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.21",
+        "version": "2.4.22",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
