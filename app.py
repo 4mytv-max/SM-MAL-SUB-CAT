@@ -340,6 +340,8 @@ def smc_catalog_defs():
     docs_s = [it for it in series if is_doc(it)]
 
     cats = [
+        {"id": "smc_status", "type": "movie",
+         "name": "Catalog Status", "kind": "status"},
         {"id": "smc_new_msone", "type": "movie",
          "name": "Msone New Releases", "kind": "live_msone"},
         {"id": "smc_new_goat", "type": "movie",
@@ -443,6 +445,8 @@ def _items_for_cat(cat):
     kind = cat["kind"]
     if kind == "tiles":
         return []
+    if kind == "status":
+        return []  # synthetic single meta, built in smc_metas()
     if kind == "latest_all":
         return items  # pre-sorted newest-first
     if kind == "live_msone":
@@ -1359,6 +1363,8 @@ def _live_mm_releases():
 
 
 def smc_metas(cid):
+    if cid == "smc_status":
+        return [_status_meta()]
     if cid in _mega_metas:
         return _mega_metas[cid]
     cat = next(c for c in _all_cat_defs() if c["id"] == cid)
@@ -1387,6 +1393,171 @@ def tile_metas():
             "description": t["desc"],
         })
     return metas
+
+
+# ---------------- catalog status row ----------------
+# A single synthetic meta ("Catalog Status") whose poster/background are
+# rendered live by /status/poster.jpg + /status/strip.jpg from the current
+# catalog data: total titles, movies, series, titles added today (IST).
+# It is a normal catalog row: the user places it anywhere in their
+# profile (top/middle/bottom) like every other row (request 2026-10-28).
+_STATUS_BASE = "https://sm-mal-sub-cat-pyx0.onrender.com/00"
+_STATUS_CACHE = {"at": 0.0, "stats": None}
+_STATUS_IMG_CACHE = {}
+
+
+def _catalog_stats():
+    import datetime as _dt
+    now = time.time()
+    if _STATUS_CACHE["stats"] is not None and now - _STATUS_CACHE["at"] < 300:
+        return _STATUS_CACHE["stats"]
+    items = all_items()
+    ist = _dt.timezone(_dt.timedelta(hours=5, minutes=30))
+    today = _dt.datetime.now(ist).date()
+    movies = series = added_today = 0
+    per_source = Counter()
+    for it in items:
+        if it.get("media") == "movie":
+            movies += 1
+        elif it.get("media") == "tv":
+            series += 1
+        for s in (it.get("sources") or []):
+            per_source[s] += 1
+        try:
+            dt = _dt.datetime.fromisoformat(
+                str(it.get("added") or "").replace("Z", "+00:00"))
+            if dt.tzinfo is not None and dt.astimezone(ist).date() == today:
+                added_today += 1
+        except Exception:
+            pass
+    stats = {
+        "total": len(items), "movies": movies, "series": series,
+        "added_today": added_today, "date": today.strftime("%d %b %Y"),
+        "msone": per_source.get("msone", 0),
+        "mm": per_source.get("moviemirror", 0),
+        "goat": per_source.get("teamgoat", 0),
+    }
+    _STATUS_CACHE.update(at=now, stats=stats)
+    return stats
+
+
+def _status_meta(detail=False):
+    s = _catalog_stats()
+    desc = (f"{s['total']:,} titles with Malayalam subtitles.\n"
+            f"Movies: {s['movies']:,}  \u2022  Series: {s['series']:,}\n"
+            f"Added today: +{s['added_today']}  \u2022  Updated: {s['date']}")
+    if detail:
+        desc += ("\n\nTitles by source (one title can be on more than "
+                 "one site):\n"
+                 f"\u2022 Msone: {s['msone']:,}\n"
+                 f"\u2022 Movie Mirror: {s['mm']:,}\n"
+                 f"\u2022 Team GOAT: {s['goat']:,}\n\n"
+                 "Suresh Mulla MAL CATALOG v2 \u2014 Msone + Movie Mirror + "
+                 "Team GOAT combined.")
+    return {
+        "id": "smcs:status",
+        "type": "movie",
+        "name": "Catalog Status",
+        "poster": f"{_STATUS_BASE}/status/poster.jpg",
+        "background": f"{_STATUS_BASE}/status/strip.jpg",
+        "description": desc,
+    }
+
+
+def _status_gradient(w, h):
+    top, bottom = (10, 42, 64), (32, 10, 54)
+    grad = Image.new("RGB", (1, h))
+    for y in range(h):
+        t = y / max(h - 1, 1)
+        grad.putpixel((0, y), tuple(
+            int(top[i] + (bottom[i] - top[i]) * t) for i in range(3)))
+    return grad.resize((w, h))
+
+
+def _status_image(kind):
+    """JPEG bytes for the status card; cached per stats signature so it
+    regenerates by itself when the counts or the date change."""
+    if not _PIL_OK:
+        return None
+    s = _catalog_stats()
+    key = (kind, s["total"], s["movies"], s["series"],
+           s["added_today"], s["date"])
+    if key in _STATUS_IMG_CACHE:
+        return _STATUS_IMG_CACHE[key]
+    accent = (140, 200, 255)
+    soft = (200, 220, 255)
+    white = (255, 255, 255)
+    green = (120, 255, 170)
+    bold = "LiberationSans-Bold.ttf"
+    if kind == "poster":  # portrait 500x750
+        img = _status_gradient(500, 750)
+        d = ImageDraw.Draw(img)
+        d.text((36, 40), "CATALOG", font=_strip_font(bold, 34), fill=accent)
+        d.text((36, 80), "STATUS", font=_strip_font(bold, 34), fill=accent)
+        d.text((36, 140), f"{s['total']:,}", font=_strip_font(bold, 96),
+               fill=white)
+        d.text((38, 250), "TOTAL TITLES", font=_strip_font(bold, 28),
+               fill=soft)
+        d.line([36, 302, 464, 302], fill=white, width=2)
+        d.text((36, 328), "Movies", font=_strip_font(bold, 32), fill=soft)
+        d.text((290, 328), f"{s['movies']:,}", font=_strip_font(bold, 32),
+               fill=white)
+        d.text((36, 380), "Series", font=_strip_font(bold, 32), fill=soft)
+        d.text((290, 380), f"{s['series']:,}", font=_strip_font(bold, 32),
+               fill=white)
+        d.line([36, 440, 464, 440], fill=white, width=2)
+        d.text((36, 466), "Today Added", font=_strip_font(bold, 30),
+               fill=soft)
+        d.text((330, 466), f"+{s['added_today']}",
+               font=_strip_font(bold, 30), fill=green)
+        d.text((36, 518), s["date"], font=_strip_font(bold, 28), fill=soft)
+        d.text((36, 688), "SURESH MULLA MAL CATALOG v2",
+               font=_fit_font(bold, "SURESH MULLA MAL CATALOG v2", 428, 22),
+               fill=accent)
+    else:  # landscape strip 1280x720
+        img = _status_gradient(1280, 720)
+        d = ImageDraw.Draw(img)
+        d.text((70, 90), "CATALOG STATUS", font=_strip_font(bold, 46),
+               fill=accent)
+        big = f"{s['total']:,}"
+        bf = _strip_font(bold, 170)
+        d.text((70, 165), big, font=bf, fill=white)
+        d.text((70 + d.textlength(big, font=bf) + 40, 282), "TOTAL TITLES",
+               font=_strip_font(bold, 40), fill=soft)
+        d.line([70, 400, 1210, 400], fill=white, width=3)
+        d.text((70, 438), f"Movies {s['movies']:,}   \u2022   "
+               f"Series {s['series']:,}", font=_strip_font(bold, 56),
+               fill=white)
+        d.text((70, 540), f"Updated {s['date']}",
+               font=_strip_font(bold, 44), fill=soft)
+        d.text((700, 540), f"Today +{s['added_today']}",
+               font=_strip_font(bold, 44), fill=green)
+        d.text((70, 640), "SURESH MULLA MAL CATALOG v2",
+               font=_strip_font(bold, 26), fill=accent)
+    buf = io.BytesIO()
+    img.save(buf, "JPEG", quality=90)
+    data = buf.getvalue()
+    _STATUS_IMG_CACHE.clear()
+    _STATUS_IMG_CACHE[key] = data
+    return data
+
+
+@app.route("/status/poster.jpg")
+def status_poster():
+    data = _status_image("poster")
+    if data is None:
+        return Response(status=404)
+    return Response(data, mimetype="image/jpeg",
+                    headers={"Cache-Control": "public, max-age=300"})
+
+
+@app.route("/status/strip.jpg")
+def status_strip():
+    data = _status_image("strip")
+    if data is None:
+        return Response(status=404)
+    return Response(data, mimetype="image/jpeg",
+                    headers={"Cache-Control": "public, max-age=300"})
 
 
 def mega_by_id():
@@ -2077,7 +2248,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.20",
+        "version": "2.4.21",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
@@ -2124,6 +2295,8 @@ def catalog(ctype, cid, skip=0, search=None):
 @app.route("/meta/<mtype>/<mid>.json")
 def meta(mtype, mid):
     base = request.url_root.rstrip("/")
+    if mid == "smcs:status":
+        return jsonify({"meta": _status_meta(detail=True)})
     for t in TILES:
         if mid == f"smcs:tile_{t['tile']}":
             if t["tile"] == "movies":
