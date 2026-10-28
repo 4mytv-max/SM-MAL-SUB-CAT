@@ -769,8 +769,18 @@ def _to_meta(it, with_videos=False, detail=False):
             poster = ("https://sm-mal-sub-cat-pyx0.onrender.com/00"
                       f"/mlposter/{iid}.jpg")
     if poster is None and iid:
-        poster = ("https://api.ratingposterdb.com/t0-free-rpdb/imdb/"
-                  f"poster-default/{iid}.jpg?fallback=true")
+        if detail:
+            poster = ("https://api.ratingposterdb.com/t0-free-rpdb/imdb/"
+                      f"poster-default/{iid}.jpg?fallback=true")
+        else:
+            # Catalog cards: PostersPlus posters, served through the
+            # addon's own /pp/ route (user decision 2026-10-28). The
+            # route returns the PostersPlus image, or redirects to the
+            # RPDB poster if PostersPlus is unavailable - so a card
+            # poster never depends on the third-party service being up.
+            poster = ("https://sm-mal-sub-cat-pyx0.onrender.com/00"
+                      f"/pp/{'series' if it['media'] != 'movie' else 'movie'}"
+                      f"/{iid}.jpg")
     if poster is None and it.get("poster_path"):
         poster = _img(POSTER, it['poster_path'])
     if poster is None and it.get("poster_url"):
@@ -2421,7 +2431,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.27",
+        "version": "2.4.28",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
@@ -3124,6 +3134,72 @@ def mlposter(iid):
                 _ML_CACHE.pop(k, None)
         _ML_CACHE[iid] = out
     return Response(out, mimetype="image/jpeg",
+                    headers={"Cache-Control": "public, max-age=604800"})
+
+
+# ---------------- PostersPlus card posters ----------------
+# Catalog cards carry PostersPlus posters (user decision 2026-10-28:
+# frosted strip, Genre + IMDb + RT + Meta, no year - the user's own
+# edited template). The addon serves them through this route instead
+# of hotlinking PostersPlus: if PostersPlus is unreachable or answers
+# badly, the route redirects to our own RPDB poster, so cards fall
+# back to our posters automatically (user: "PostersPlus illenkil
+# nammudethu thanne varanam"). Successful renders are cached in
+# memory; a failure arms a short window where requests redirect
+# immediately instead of each waiting on a dead service.
+_PP_TPL = (
+    "https://postersplus.slokker.cc/poster?tmdb_id=&imdb_id={iid}"
+    "&stremio_id={iid}&type={typ}&shape=poster&pc=stremio_tv_nuvio"
+    "&tg=off&bgr=off&sm=notch&_vpcb=0&_vcsa=2.50&_vcl=1&_sm=sash"
+    "&_art=original&bp=top_left&_bs=1.50&_is=1.50&_lp=right"
+    "&_ip=bottom_right&_pc=1&_soo10=1&_ws=1&_rb=1"
+    "&rb=imdb,tomatoes,metacritic&hy=1&fti=1&irs=fallback&trs=direct"
+    "&rdm=4&fr=1&bsoo10=1&bhr=0.075&bfsr=0.55&mw=tk:.01,im:1&tw=im:1"
+    "&uoa=1&lp=english,original,neutral,native,native_if_original,text"
+    "&fbs=photoreal&cg=0&rsd=0&mo=year,genre,rating&lf=rubik&sws=1"
+    "&sbsw=1.40&sbsh=1.20&sbpo=left"
+    "&sp=default2,-studio,-director,-cast,-blockbuster,-physical,"
+    "premiere%409,true_story%4015"
+    "&bdm=7&bg1=chip:4:res:35&_bdm=7&_bg1=tr:4:res:44&bqs=frosted")
+_PP_CACHE = {}
+_PP_LOCK = threading.Lock()
+_PP_FAIL_UNTIL = [0.0]
+
+
+@app.route("/pp/<typ>/<iid>.jpg")
+def pposter(typ, iid):
+    rpdb = ("https://api.ratingposterdb.com/t0-free-rpdb/imdb/"
+            f"poster-default/{iid}.jpg?fallback=true")
+    if typ not in ("movie", "series") \
+            or not re.fullmatch(r"tt\d{7,}", iid or ""):
+        return Response(status=302, headers={"Location": rpdb})
+    key = f"{typ}:{iid}"
+    with _PP_LOCK:
+        hit = _PP_CACHE.get(key)
+    if hit:
+        data, ctype = hit
+        return Response(data, mimetype=ctype,
+                        headers={"Cache-Control": "public, max-age=604800"})
+    if time.time() < _PP_FAIL_UNTIL[0]:
+        return Response(status=302, headers={"Location": rpdb})
+    try:
+        url = _PP_TPL.format(iid=iid, typ=typ)
+        req = urllib.request.Request(url, headers={"User-Agent": UA})
+        with urllib.request.urlopen(req, timeout=10) as r:
+            data = r.read()
+            ctype = r.headers.get_content_type() or "image/webp"
+        if not data or not ctype.startswith("image/"):
+            raise ValueError("bad postersplus response")
+    except Exception as e:
+        print(f"[pp] fallback {iid}: {e}", flush=True)
+        _PP_FAIL_UNTIL[0] = time.time() + 90
+        return Response(status=302, headers={"Location": rpdb})
+    with _PP_LOCK:
+        if len(_PP_CACHE) > 200:
+            for k in list(_PP_CACHE)[:100]:
+                _PP_CACHE.pop(k, None)
+        _PP_CACHE[key] = (data, ctype)
+    return Response(data, mimetype=ctype,
                     headers={"Cache-Control": "public, max-age=604800"})
 
 
