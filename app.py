@@ -820,15 +820,38 @@ _newrel_lock = threading.Lock()
 MSONE_RSS = "https://malayalamsubtitles.org/feed/"
 
 
-def _tmdb_search_enrich(title_en, year):
+_SERIES_HINT = re.compile(
+    r"\bS\d{1,2}\s*(?:EP|E)\s*\d{0,3}\b|\bEP\s*\d{1,3}\b"
+    r"|\bSeason\s*\d+\b|സീസൺ", re.I)
+
+
+def _clean_search_title(en):
+    """Strip episode-pack junk ('S01 EP01 – EP04', 'S02E03', 'EP04',
+    'Season 1') from a parsed post title so TMDB search sees the bare
+    show name. Falls back to the original when cleaning would empty it
+    (2026-10-28: 'Crystal Lake S01 EP01 – EP04' matched nothing and the
+    row item rendered with a blank poster and no identity)."""
+    t = en or ""
+    t = re.sub(r"\bS\d{1,2}\s*(?:EP|E)\s*\d{0,3}\s*[–—-]\s*"
+               r"(?:EP|E)?\s*\d{1,3}\b", " ", t, flags=re.I)
+    t = re.sub(r"\bS\d{1,2}\s*(?:EP|E)\s*\d{1,3}\b", " ", t, flags=re.I)
+    t = re.sub(r"\bEP\s*\d{1,3}\b", " ", t, flags=re.I)
+    t = re.sub(r"\bSeason\s*\d+\b", " ", t, flags=re.I)
+    t = re.sub(r"\s+", " ", t).strip(" :|-–—")
+    return t or (en or "")
+
+
+def _tmdb_search_enrich(title_en, year, prefer_tv=False):
     """Search TMDB for title+year. Returns dict with poster_path,
-    overview, genre_ids, imdb_id, media, or None."""
+    overview, genre_ids, imdb_id, media, or None. prefer_tv searches
+    series first (episode-pack posts must not land on a same-named
+    movie)."""
     if not TMDB_API_KEY or not title_en:
         return None
     try:
         q = urllib.parse.quote(title_en)
         # try with year first, then without year as fallback
-        for mtype in ("movie", "tv"):
+        for mtype in (("tv", "movie") if prefer_tv else ("movie", "tv")):
             for try_year in ([year] if year else []) + [None]:
                 if try_year:
                     yparam = (f"&year={try_year}" if mtype == "movie"
@@ -859,6 +882,7 @@ def _tmdb_search_enrich(title_en, year):
                         "overview": r.get("overview"),
                         "genre_ids": r.get("genre_ids") or [],
                         "imdb_id": imdb_id,
+                        "tmdb_id": r.get("id"),
                         "media": "tv" if mtype == "tv" else "movie",
                     }
         return None
@@ -1103,12 +1127,20 @@ def _live_goat_releases():
             en = parts[0].title() if parts else t2
             ml = parts[1] if len(parts) > 1 else None
             slug = slug_path.strip("/").split("/")[-1]
-            enrich = _tmdb_search_enrich(en, year)
+            # Same episode-pack handling as the MM builder: search the
+            # bare show name, prefer series results for S/EP posts.
+            series_hint = bool(_SERIES_HINT.search(t))
+            search_en = _clean_search_title(en) if series_hint else en
+            enrich = _tmdb_search_enrich(search_en, year,
+                                         prefer_tv=series_hint)
+            goat_media = (enrich or {}).get("media", "movie")
+            if goat_media == "movie" and series_hint:
+                goat_media = "tv"
             it = {
                 "card_id": f"smcs:new:goat:{slug}",
-                "name": en,
+                "name": search_en if goat_media == "tv" else en,
                 "name_ml": ml,
-                "media": (enrich or {}).get("media", "movie"),
+                "media": goat_media,
                 "poster_path": (enrich or {}).get("poster_path"),
                 "poster_url": poster_url,  # direct from homepage
                 "backdrop_path": (enrich or {}).get("backdrop_path"),
@@ -1276,7 +1308,13 @@ def _live_mm_releases():
             slug = link.rstrip("/").split("/")[-1]
             if not en or re.match(r"^[\W_]+$", en):
                 continue
-            enrich = _tmdb_search_enrich(en, year)
+            # Episode-pack posts ("... S01 EP01 – EP04") defeat TMDB
+            # search with the junk left in; search the bare show name
+            # and prefer series results for such posts.
+            series_hint = bool(_SERIES_HINT.search(title_raw))
+            search_en = _clean_search_title(en) if series_hint else en
+            enrich = _tmdb_search_enrich(search_en, year,
+                                         prefer_tv=series_hint)
             # Fallback: check data file for site poster (user 2026-10-12)
             poster_url = None
             if not (enrich or {}).get("poster_path"):
@@ -1290,16 +1328,16 @@ def _live_mm_releases():
                             break
                 except Exception:
                     pass
-            # Detect series by name (Season/സീസൺ) if TMDB didn't identify
+            # Detect series by name (Season/സീസൺ/S01 EP..) if TMDB
+            # didn't identify it
             media_type = (enrich or {}).get("media", "movie")
-            if media_type == "movie":
-                # Check if it's actually a series
-                name_lower = (en + " " + (ml or "")).lower()
-                if "season" in name_lower or "സീസൺ" in name_lower:
-                    media_type = "tv"
+            if media_type == "movie" and series_hint:
+                media_type = "tv"
             it = {
                 "card_id": f"smcs:new:mm:{slug}",
-                "name": en,
+                # A matched series shows under its bare show name, not
+                # the episode-pack post title.
+                "name": search_en if media_type == "tv" else en,
                 "name_ml": ml,
                 "media": media_type,
                 "poster_path": (enrich or {}).get("poster_path"),
@@ -2292,7 +2330,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.23",
+        "version": "2.4.24",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
