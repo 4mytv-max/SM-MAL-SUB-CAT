@@ -1463,7 +1463,12 @@ def _status_meta(detail=False):
         # so clients render it as a full-width strip tile in the row.
         "poster": f"{_STATUS_BASE}/status/strip.jpg",
         "posterShape": "landscape",
-        "background": f"{_STATUS_BASE}/status/strip.jpg",
+        # Hero/detail background is a SEPARATE center-safe design: the
+        # phone hero center-crops backdrops to ~44% width (plus a 1.14x
+        # zoom), which cut the strip's left-aligned text (user screenshot
+        # 2026-10-28). The hero image keeps every count inside the
+        # central safe zone; the row tile keeps the strip design.
+        "background": f"{_STATUS_BASE}/status/hero.jpg",
         "description": desc,
     }
 
@@ -1518,7 +1523,7 @@ def _status_image(kind):
         d.text((36, 688), "SURESH MULLA MAL CATALOG v2",
                font=_fit_font(bold, "SURESH MULLA MAL CATALOG v2", 428, 22),
                fill=accent)
-    else:  # landscape strip 1280x720
+    elif kind == "strip":  # landscape strip 1280x720
         img = _status_gradient(1280, 720)
         d = ImageDraw.Draw(img)
         d.text((70, 90), "CATALOG STATUS", font=_strip_font(bold, 46),
@@ -1538,6 +1543,32 @@ def _status_image(kind):
                font=_strip_font(bold, 44), fill=green)
         d.text((70, 640), "SURESH MULLA MAL CATALOG v2",
                font=_strip_font(bold, 26), fill=accent)
+    elif kind == "hero":  # landscape 1280x720, center-safe for hero crop
+        from PIL import ImageFilter as _IF
+        img = _status_gradient(1280, 720)
+        glow = Image.new("RGB", (1280, 720), (0, 0, 0))
+        gd = ImageDraw.Draw(glow)
+        gd.ellipse([220, 40, 1060, 560], fill=(38, 60, 110))
+        glow = glow.filter(_IF.GaussianBlur(90))
+        img = Image.blend(img, Image.blend(img, glow, 0.85), 0.55)
+        d = ImageDraw.Draw(img)
+        cx = 640
+
+        def _ctr(y, text, size, fill):
+            f = _strip_font(bold, size)
+            d.text((cx - d.textlength(text, font=f) / 2, y), text,
+                   font=f, fill=fill)
+
+        d.rectangle([26, 26, 1254, 694], outline=(90, 130, 190), width=2)
+        _ctr(58, "CATALOG STATUS", 44, accent)
+        _ctr(116, f"{s['total']:,}", 160, white)
+        _ctr(290, "TOTAL TITLES", 38, soft)
+        d.line([cx - 230, 350, cx + 230, 350], fill=white, width=3)
+        _ctr(368, f"Movies {s['movies']:,}", 50, white)
+        _ctr(430, f"Series {s['series']:,}", 50, white)
+        _ctr(596, f"Updated {s['date']}  \u2022  Today +{s['added_today']}",
+             36, soft)
+        _ctr(650, "SURESH MULLA MAL CATALOG v2", 26, accent)
     buf = io.BytesIO()
     img.save(buf, "JPEG", quality=90)
     data = buf.getvalue()
@@ -1558,6 +1589,15 @@ def status_poster():
 @app.route("/status/strip.jpg")
 def status_strip():
     data = _status_image("strip")
+    if data is None:
+        return Response(status=404)
+    return Response(data, mimetype="image/jpeg",
+                    headers={"Cache-Control": "public, max-age=300"})
+
+
+@app.route("/status/hero.jpg")
+def status_hero():
+    data = _status_image("hero")
     if data is None:
         return Response(status=404)
     return Response(data, mimetype="image/jpeg",
@@ -2252,7 +2292,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.22",
+        "version": "2.4.23",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
