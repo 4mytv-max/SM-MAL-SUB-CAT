@@ -665,7 +665,13 @@ def _lang_display(it):
 
 def _to_meta(it, with_videos=False, detail=False):
     disp = it["name"] + (f" / {it['name_ml']}" if it.get("name_ml") else "")
-    labels = [SITE_LABEL[s] for s in it.get("sources", []) if s in SITE_LABEL]
+    # Live-row builders use short source keys ("mm"/"goat"); mega items
+    # use the long forms. Alias so the subtitle-source line renders for
+    # both (live items showed no source line before this).
+    _SRC_ALIAS = {"mm": "moviemirror", "goat": "teamgoat"}
+    labels = [SITE_LABEL[_SRC_ALIAS.get(s, s)]
+              for s in it.get("sources", [])
+              if _SRC_ALIAS.get(s, s) in SITE_LABEL]
     urls = "\n".join(it.get("post_urls", {}).values())
     ob = it.get("omdb") or {}
     mb = it.get("mdb") or {}
@@ -920,6 +926,48 @@ def _omdb_enrich(title_en, year):
         return None
 
 
+_OMDB_ID_CACHE = {}
+
+
+def _omdb_by_imdb(imdb_id):
+    """Full OMDb block for an IMDb ID (the info-line fields), cached for
+    the process lifetime. Live-row items are not in mega yet, so without
+    this their detail pages show no ratings/age/language line at all."""
+    if not OMDB_API_KEY or not imdb_id:
+        return None
+    if imdb_id in _OMDB_ID_CACHE:
+        return _OMDB_ID_CACHE[imdb_id]
+    block = None
+    try:
+        data = _api_fetch_json(
+            f"https://www.omdbapi.com/?apikey={OMDB_API_KEY}&i={imdb_id}",
+            timeout=10)
+        if data.get("Response") == "True":
+            rt = None
+            for r in data.get("Ratings") or []:
+                if r.get("Source") == "Rotten Tomatoes":
+                    try:
+                        rt = int(str(r.get("Value", "")).rstrip("%"))
+                    except Exception:
+                        pass
+
+            def _v(k):
+                v = data.get(k)
+                return None if v in (None, "N/A") else v
+
+            block = {
+                "imdbRating": _v("imdbRating"), "rt": rt,
+                "rated": _v("Rated"), "runtime": _v("Runtime"),
+                "metascore": _v("Metascore"), "genre": _v("Genre"),
+                "director": _v("Director"), "actors": _v("Actors"),
+                "language": _v("Language"),
+            }
+    except Exception:
+        block = None
+    _OMDB_ID_CACHE[imdb_id] = block
+    return block
+
+
 def _parse_msone_title(raw):
     """'Nine Puzzles / നയൻ പസിൽസ് (2025)' -> (en, ml, year)."""
     raw = html.unescape(raw or "").strip()
@@ -1023,6 +1071,10 @@ def _live_msone_releases():
             }
             if enrich.get("imdb_id"):
                 it["card_id"] = enrich["imdb_id"]
+            if str(it["card_id"]).startswith("tt"):
+                _ob = _omdb_by_imdb(it["card_id"])
+                if _ob:
+                    it["omdb"] = _ob
             items.append(it)
             # Don't break at 10 - process all RSS items to find overrides like One Life
             # We'll trim to 10 at the end, prioritizing items with IMDb IDs
@@ -1161,6 +1213,10 @@ def _live_goat_releases():
                         it["card_id"] = override
                 except (ValueError, TypeError):
                     pass
+            if str(it["card_id"]).startswith("tt"):
+                _ob = _omdb_by_imdb(it["card_id"])
+                if _ob:
+                    it["omdb"] = _ob
             items.append(it)
             if len(items) >= 15:
                 break
@@ -1358,6 +1414,10 @@ def _live_mm_releases():
                         it["card_id"] = override
                 except (ValueError, TypeError):
                     pass
+            if str(it["card_id"]).startswith("tt"):
+                _ob = _omdb_by_imdb(it["card_id"])
+                if _ob:
+                    it["omdb"] = _ob
             items.append(it)
     except Exception:
         pass
@@ -2330,7 +2390,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.24",
+        "version": "2.4.25",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
