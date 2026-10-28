@@ -855,9 +855,33 @@ def _tmdb_search_enrich(title_en, year, prefer_tv=False):
     if not TMDB_API_KEY or not title_en:
         return None
     try:
+        yint = int(year) if year else None
+    except (TypeError, ValueError):
+        yint = None
+
+    def _year_ok(r, mtype):
+        # Identity guard (2026-10-28): a name match whose year clashes
+        # with the source post's year is a DIFFERENT title - never accept
+        # it. TMDB's year filter is soft: search/movie "Crystal Lake"
+        # &year=2026 returns Friday the 13th (2009) as its only hit, and
+        # a transient empty TV search let the live row take that wrong
+        # identity for the Crystal Lake (2026) series post.
+        if yint is None:
+            return True
+        d = (r.get("release_date") if mtype == "movie"
+             else r.get("first_air_date")) or ""
+        m = re.match(r"(\d{4})", d)
+        if not m:
+            return False
+        return abs(int(m.group(1)) - yint) <= 1
+
+    try:
         q = urllib.parse.quote(title_en)
+        # Episode-pack posts are series by definition: never fall
+        # through to a movie match when the TV search comes up empty.
+        mtypes = ("tv",) if prefer_tv else ("movie", "tv")
         # try with year first, then without year as fallback
-        for mtype in (("tv", "movie") if prefer_tv else ("movie", "tv")):
+        for mtype in mtypes:
             for try_year in ([year] if year else []) + [None]:
                 if try_year:
                     yparam = (f"&year={try_year}" if mtype == "movie"
@@ -868,8 +892,9 @@ def _tmdb_search_enrich(title_en, year, prefer_tv=False):
                        f"?api_key={TMDB_API_KEY}&query={q}{yparam}&page=1")
                 data = _api_fetch_json(api, timeout=10)
                 results = data.get("results") or []
-                if results:
-                    r = results[0]
+                r = next((x for x in results if _year_ok(x, mtype)),
+                         None)
+                if r:
                     # get imdb id via details
                     imdb_id = None
                     try:
@@ -2390,7 +2415,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.25",
+        "version": "2.4.26",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
