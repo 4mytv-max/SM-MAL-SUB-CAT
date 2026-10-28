@@ -828,7 +828,7 @@ MSONE_RSS = "https://malayalamsubtitles.org/feed/"
 
 _SERIES_HINT = re.compile(
     r"\bS\d{1,2}\s*(?:EP|E)\s*\d{0,3}\b|\bEP\s*\d{1,3}\b"
-    r"|\bSeason\s*\d+\b|സീസൺ", re.I)
+    r"|\bSeason\s*\d+\b|\bS\d{1,2}\b|സീസൺ", re.I)
 
 
 def _clean_search_title(en):
@@ -892,7 +892,11 @@ def _tmdb_search_enrich(title_en, year, prefer_tv=False):
                        f"?api_key={TMDB_API_KEY}&query={q}{yparam}&page=1")
                 data = _api_fetch_json(api, timeout=10)
                 results = data.get("results") or []
-                r = next((x for x in results if _year_ok(x, mtype)),
+                # Only TMDB's top few relevance hits are candidates:
+                # scanning the whole page for any year-compatible entry
+                # lets an obscure same-name title (a 2025 fan film,
+                # "Memorias de Crystal Lake 2") beat the real match.
+                r = next((x for x in results[:3] if _year_ok(x, mtype)),
                          None)
                 if r:
                     # get imdb id via details
@@ -1206,7 +1210,8 @@ def _live_goat_releases():
             slug = slug_path.strip("/").split("/")[-1]
             # Same episode-pack handling as the MM builder: search the
             # bare show name, prefer series results for S/EP posts.
-            series_hint = bool(_SERIES_HINT.search(t))
+            series_hint = bool(_SERIES_HINT.search(t)
+                               or _SERIES_HINT.search(slug))
             search_en = _clean_search_title(en) if series_hint else en
             enrich = _tmdb_search_enrich(search_en, year,
                                          prefer_tv=series_hint)
@@ -1392,7 +1397,8 @@ def _live_mm_releases():
             # Episode-pack posts ("... S01 EP01 – EP04") defeat TMDB
             # search with the junk left in; search the bare show name
             # and prefer series results for such posts.
-            series_hint = bool(_SERIES_HINT.search(title_raw))
+            series_hint = bool(_SERIES_HINT.search(title_raw)
+                               or _SERIES_HINT.search(slug))
             search_en = _clean_search_title(en) if series_hint else en
             enrich = _tmdb_search_enrich(search_en, year,
                                          prefer_tv=series_hint)
@@ -2415,7 +2421,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.26",
+        "version": "2.4.27",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
