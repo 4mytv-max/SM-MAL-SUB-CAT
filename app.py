@@ -2431,7 +2431,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.28",
+        "version": "2.4.29",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
@@ -3335,6 +3335,60 @@ def delay_subtitles(secs, vtype, rid):
     resp = jsonify({"subtitles": []})
     resp.headers["Access-Control-Allow-Origin"] = "*"
     return resp
+
+
+# ---------------- startup warmer + live-row refresher ----------------
+# The home screen's first load used to pay for everything at once:
+# live-row rebuilds (site fetch + TMDB matching), first-time meta
+# builds, and per-poster PostersPlus renders - up to ~50s after a
+# restart or a cache expiry (user report 2026-10-28). A background
+# thread does that work ahead of time: warm the top home rows and
+# their posters at boot, then re-run the live builders every 45 min
+# (before their 1h cache TTL) so a user request never has to.
+_WARM_CIDS = ["smc_status", "smc_new_msone", "smc_new_goat",
+              "smc_new_mm", "smc_new_series", "smc_latest_movies",
+              "smc_latest_series", "smc_ko_new_m", "smc_ko_new_s"]
+
+
+def _warm_once():
+    for cid in _WARM_CIDS:
+        try:
+            smc_metas(cid)
+        except Exception:
+            pass
+    # Pre-render the top rows' PostersPlus posters through our own
+    # /pp/ route so their first paint is a cache hit.
+    try:
+        seen = set()
+        for cid in ("smc_new_msone", "smc_new_goat", "smc_new_mm",
+                    "smc_new_series"):
+            for m in smc_metas(cid)[:6]:
+                u = m.get("poster") or ""
+                if "/pp/" in u and u not in seen:
+                    seen.add(u)
+                    try:
+                        req = urllib.request.Request(
+                            u, headers={"User-Agent": UA})
+                        urllib.request.urlopen(req, timeout=15).read()
+                    except Exception:
+                        pass
+    except Exception:
+        pass
+
+
+def _warmer_loop():
+    _warm_once()
+    while True:
+        time.sleep(45 * 60)
+        try:
+            _live_msone_releases()
+            _live_goat_releases()
+            _live_mm_releases()
+        except Exception:
+            pass
+
+
+threading.Thread(target=_warmer_loop, daemon=True).start()
 
 
 if __name__ == "__main__":
