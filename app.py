@@ -738,18 +738,24 @@ def _to_meta(it, with_videos=False, detail=False):
             poster = f"{proxy_base}/poster/?url={urllib.parse.quote(purl, safe='')}"
             break
     if poster is None and iid and _PIL_OK:
-        # Malayalam community posters (user rule 2026-10-27): Msone
-        # posters on cards AND detail pages; GOAT/MM posters on cards
-        # only (their detail pages keep the clearer RPDB poster). The
-        # /mlposter/ route draws the rating strip onto the community
-        # poster, so every poster still carries ratings.
+        # Malayalam community posters: DETAIL pages only, and only
+        # where they are the highest-quality poster available (user
+        # decision 2026-10-28). Msone posters are full-size originals
+        # (clearer than RPDB), so Msone detail pages use /mlposter/;
+        # GOAT/MM community posters are 300px, so their detail pages
+        # keep the clearer RPDB poster. CATALOG CARDS use RPDB for
+        # every title (user decision 2026-10-28): on-the-fly poster
+        # compositing made row browsing lag, so cards now come from
+        # the RPDB CDN. The /mlposter/ route draws the rating strip
+        # onto the community poster, so detail posters still carry
+        # ratings.
         ml_url = it.get("ml_poster")
         ml_src = it.get("ml_src")
         if not ml_url:
             _hit = _ml_lookup(iid)
             if _hit:
                 ml_url, ml_src = _hit
-        if ml_url and (not detail or ml_src == "msone"):
+        if ml_url and detail and ml_src == "msone":
             poster = ("https://sm-mal-sub-cat-pyx0.onrender.com/00"
                       f"/mlposter/{iid}.jpg")
     if poster is None and iid:
@@ -2071,7 +2077,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.19",
+        "version": "2.4.20",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
