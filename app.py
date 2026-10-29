@@ -340,6 +340,15 @@ def smc_catalog_defs():
     docs_s = [it for it in series if is_doc(it)]
 
     cats = [
+        # Trending rows first in the manifest (user 2026-10-29 wants
+        # them as the first home row; the app still owns the final
+        # on-screen order - see the note in the warmer section).
+        {"id": "smc_trending_week_m", "type": "movie",
+         "name": "Trending This Week", "kind": "trending_week",
+         "media": "movie"},
+        {"id": "smc_trending_week_s", "type": "series",
+         "name": "Trending This Week", "kind": "trending_week",
+         "media": "tv"},
         {"id": "smc_status", "type": "movie",
          "name": "Catalog Status", "kind": "status"},
         {"id": "smc_new_msone", "type": "movie",
@@ -350,12 +359,6 @@ def smc_catalog_defs():
          "name": "Movie Mirror New Releases", "kind": "live_mm"},
         {"id": "smc_new_series", "type": "series",
          "name": "New Release Series", "kind": "live_new_series"},
-        {"id": "smc_trending_week_m", "type": "movie",
-         "name": "Trending This Week", "kind": "trending_week",
-         "media": "movie"},
-        {"id": "smc_trending_week_s", "type": "series",
-         "name": "Trending This Week", "kind": "trending_week",
-         "media": "tv"},
         {"id": "smc_full_msone", "type": "movie",
          "name": "Msone Movies", "kind": "full_msone"},
         {"id": "smc_full_goat", "type": "movie",
@@ -2502,7 +2505,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.33",
+        "version": "2.4.34",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
