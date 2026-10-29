@@ -495,6 +495,17 @@ def _trending_week(media):
                     break
         except Exception:
             out = hit[1] if hit else []
+        # Trending rows are the ONE exception to the subtitle-order
+        # rule: they are ordered by RATING (user 2026-10-29, strict).
+        # The set is still this week's global trending titles that
+        # have Malayalam subtitles; IMDb rating desc, ties keep the
+        # trending rank (stable sort), unrated titles last.
+        def _imdb_rating(it):
+            try:
+                return float((it.get("omdb") or {}).get("imdbRating"))
+            except (TypeError, ValueError):
+                return -1.0
+        out = sorted(out, key=_imdb_rating, reverse=True)
     with _TREND_LOCK:
         _TREND_CACHE[media] = (now, out)
     return out
@@ -2505,7 +2516,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.34",
+        "version": "2.4.35",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
