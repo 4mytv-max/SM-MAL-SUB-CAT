@@ -504,10 +504,13 @@ def _items_for_cat(cat):
               if it["media"] == cat["media"] and it.get("lang") == "korean"]
         return ko[:50]
     if kind == "ko_all":
-        # Korean all time (alphabetical)
+        # Korean all time - newest first like every other row (user
+        # row-order rule 2026-10-29: only Trending rows follow rank
+        # order; everything else opens with the category's most
+        # recent release). Was alphabetical until v2.4.32.
         ko = [it for it in items
               if it["media"] == cat["media"] and it.get("lang") == "korean"]
-        return sorted(ko, key=lambda x: (x.get("name") or "").lower())[:50]
+        return ko[:50]
     if kind == "genre":
         return [it for it in items
                 if it["media"] == cat["media"]
@@ -2440,7 +2443,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.31",
+        "version": "2.4.32",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
