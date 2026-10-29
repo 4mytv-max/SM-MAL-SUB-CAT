@@ -468,13 +468,17 @@ def _items_for_cat(cat):
             if it.get("media") == "tv":
                 series.append(it)
         return series
-    # Full source rows read their data files in crawl order (oldest
-    # first), so a new title landed at the very END of the row and
-    # looked "not updated" (user report 2026-10-29, MURDER GAME at
-    # position 449/449). Reverse them: newest first, like every
-    # mega-backed row already is.
+    # Full source rows, newest first (user 2026-10-29) - but each
+    # data file's native order differs, verified against the sites'
+    # latest posts: the Msone archive is stored newest-first already
+    # (head = Dead of Winter, Tenzing; its tail is a classics
+    # backfill), while the GOAT and MM files are in crawl order,
+    # oldest first (tails = MURDER GAME / It's Not Me), so only
+    # those two are reversed. Raw file order put GOAT/MM's newest at
+    # the very END of the row (MURDER GAME at 449/449), which looked
+    # "not updated"; reversing Msone would break it the other way.
     if kind == "full_msone":
-        return _full_msone_items()[::-1]
+        return _full_msone_items()
     if kind == "full_goat":
         return _full_goat_items()[::-1]
     if kind == "full_mm":
@@ -2436,7 +2440,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.30",
+        "version": "2.4.31",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
