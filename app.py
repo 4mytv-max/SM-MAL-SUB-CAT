@@ -468,12 +468,17 @@ def _items_for_cat(cat):
             if it.get("media") == "tv":
                 series.append(it)
         return series
+    # Full source rows read their data files in crawl order (oldest
+    # first), so a new title landed at the very END of the row and
+    # looked "not updated" (user report 2026-10-29, MURDER GAME at
+    # position 449/449). Reverse them: newest first, like every
+    # mega-backed row already is.
     if kind == "full_msone":
-        return _full_msone_items()
+        return _full_msone_items()[::-1]
     if kind == "full_goat":
-        return _full_goat_items()
+        return _full_goat_items()[::-1]
     if kind == "full_mm":
-        return _full_mm_items()
+        return _full_mm_items()[::-1]
     if kind == "doc_natsci":
         # nature & science documentary series (Discovery/NatGeo style)
         return [it for it in items
@@ -2431,7 +2436,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.29",
+        "version": "2.4.30",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
