@@ -350,6 +350,12 @@ def smc_catalog_defs():
          "name": "Movie Mirror New Releases", "kind": "live_mm"},
         {"id": "smc_new_series", "type": "series",
          "name": "New Release Series", "kind": "live_new_series"},
+        {"id": "smc_trending_week_m", "type": "movie",
+         "name": "Trending This Week", "kind": "trending_week",
+         "media": "movie"},
+        {"id": "smc_trending_week_s", "type": "series",
+         "name": "Trending This Week", "kind": "trending_week",
+         "media": "tv"},
         {"id": "smc_full_msone", "type": "movie",
          "name": "Msone Movies", "kind": "full_msone"},
         {"id": "smc_full_goat", "type": "movie",
@@ -440,6 +446,57 @@ def smc_catalog_defs():
     return cats
 
 
+# ---------------- Trending This Week rows ----------------
+# Global TMDB trending-this-week titles that are IN our catalog
+# (i.e. a Malayalam subtitle exists for them), in TMDB trending
+# rank order (user request 2026-10-29). Cached 6h; the warmer
+# thread refreshes it so user requests do not pay the fetch.
+_TREND_CACHE = {}
+_TREND_LOCK = threading.Lock()
+_TREND_TTL = 6 * 3600
+
+
+def _trending_week(media):
+    now = time.time()
+    with _TREND_LOCK:
+        hit = _TREND_CACHE.get(media)
+    if hit and now - hit[0] < _TREND_TTL:
+        return hit[1]
+    out = []
+    if TMDB_API_KEY:
+        by_tmdb = {}
+        for it in all_items():
+            t = it.get("tmdb_id")
+            if t and it.get("media") == media:
+                try:
+                    by_tmdb.setdefault(int(t), it)
+                except (TypeError, ValueError):
+                    pass
+        seen = set()
+        api_media = "tv" if media == "tv" else "movie"
+        try:
+            for page in (1, 2, 3, 4, 5):
+                d = _api_fetch_json(
+                    f"https://api.themoviedb.org/3/trending/{api_media}"
+                    f"/week?api_key={TMDB_API_KEY}&page={page}",
+                    timeout=12)
+                for r in (d or {}).get("results", []):
+                    tid = r.get("id")
+                    if tid in seen:
+                        continue
+                    seen.add(tid)
+                    it = by_tmdb.get(tid)
+                    if it:
+                        out.append(it)
+                if len(out) >= 25:
+                    break
+        except Exception:
+            out = hit[1] if hit else []
+    with _TREND_LOCK:
+        _TREND_CACHE[media] = (now, out)
+    return out
+
+
 def _items_for_cat(cat):
     items = all_items()
     kind = cat["kind"]
@@ -455,6 +512,8 @@ def _items_for_cat(cat):
         return _live_goat_releases()
     if kind == "live_mm":
         return _live_mm_releases()
+    if kind == "trending_week":
+        return _trending_week(cat["media"])
     if kind == "live_new_series":
         # Combined series from all three new releases
         series = []
@@ -2443,7 +2502,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.32",
+        "version": "2.4.33",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
@@ -3358,7 +3417,8 @@ def delay_subtitles(secs, vtype, rid):
 # their posters at boot, then re-run the live builders every 45 min
 # (before their 1h cache TTL) so a user request never has to.
 _WARM_CIDS = ["smc_status", "smc_new_msone", "smc_new_goat",
-              "smc_new_mm", "smc_new_series", "smc_latest_movies",
+              "smc_new_mm", "smc_new_series", "smc_trending_week_m",
+              "smc_trending_week_s", "smc_latest_movies",
               "smc_latest_series", "smc_ko_new_m", "smc_ko_new_s"]
 
 
@@ -3396,6 +3456,8 @@ def _warmer_loop():
             _live_msone_releases()
             _live_goat_releases()
             _live_mm_releases()
+            _trending_week("movie")
+            _trending_week("tv")
         except Exception:
             pass
 
