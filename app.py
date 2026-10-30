@@ -2531,7 +2531,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.38",
+        "version": "2.4.39",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
@@ -3016,7 +3016,7 @@ def _draw_band(img, genre, entries):
     Poster pixels are never resized — full source clarity."""
     BAND = (24, 26, 31)
     w, h = img.size
-    band_h = int(h * 0.098)
+    band_h = int(h * 0.118)
     canvas = Image.new("RGB", (w, h + band_h), BAND)
     canvas.paste(img.convert("RGB"), (0, 0))
     S = 3
@@ -3169,7 +3169,7 @@ def _draw_band(img, genre, entries):
                               gap_iv, f_genre, f_val)
 
     entries = list(entries)
-    frac = 0.46
+    frac = 0.50
     while True:
         strip, total, ctx = render(frac, entries)
         if total <= W * 0.98 or frac <= 0.13:
@@ -3261,7 +3261,7 @@ _PP_TPL = (
     "&_art=original&bp=top_left&_bs=1.50&_is=1.50&_lp=right"
     "&_ip=bottom_right&_pc=1&_soo10=1&_ws=1&_rb=1"
     "&rb=imdb,tomatoes,metacritic&hy=1&fti=1&irs=fallback&trs=direct"
-    "&rdm=4&fr=1&bsoo10=1&bhr=0.075&bfsr=0.55&mw=tk:.01,im:1&tw=im:1"
+    "&rdm=4&fr=1&bsoo10=1&bhr=0.075&bfsr=0.60&mw=tk:.01,im:1&tw=im:1"
     "&uoa=1&lp=english,original,neutral,native,native_if_original,text"
     "&fbs=photoreal&cg=0&rsd=0&mo=year,genre,rating&lf=rubik&sws=1"
     "&sbsw=1.40&sbsh=1.20&sbpo=left"
