@@ -897,6 +897,11 @@ def _to_meta(it, with_videos=False, detail=False):
         # with Malayalam-poster coverage.
         meta["background"] = ("https://sm-mal-sub-cat-pyx0.onrender.com"
                               f"/00/mlbg/{iid}.jpg")
+    if not meta["background"] and iid:
+        # Never ship a blank landscape: MetaHub backgrounds cover
+        # most IMDb titles even when no backdrop is in the data.
+        meta["background"] = ("https://live.metahub.space/background/"
+                              f"medium/{iid}/img")
     if not meta["genres"] and ob.get("genre") and ob["genre"] != "N/A":
         meta["genres"] = [g.strip() for g in ob["genre"].split(",")
                            if g.strip()]
@@ -2522,7 +2527,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.36",
+        "version": "2.4.37",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
@@ -2902,9 +2907,16 @@ def _ml_load():
                         _m = re.search(r"tt\d{7,}",
                                        str(o.get("card_id") or ""))
                         iid = _m.group(0) if _m else None
-                    if iid and o.get("backdrop_path") \
-                            and iid not in bgidx:
-                        bgidx[iid] = o["backdrop_path"]
+                    _bp = o.get("backdrop_path")
+                    if iid and _bp:
+                        _old = bgidx.get(iid)
+                        # Prefer a TMDB path over a full URL: mzone
+                        # stores MetaHub URLs for titles where mega
+                        # holds the proper TMDB backdrop.
+                        if _old is None or (
+                                str(_old).startswith("http")
+                                and not str(_bp).startswith("http")):
+                            bgidx[iid] = _bp
                     if o.get("ml_poster") and iid and iid not in idx:
                         idx[iid] = (o["ml_poster"], o.get("ml_src") or "")
                     if iid and iid not in rats:
@@ -3304,9 +3316,18 @@ def mlbg(iid):
         return Response(status=404)
     bp = _ml_bg_lookup(iid)
     if bp:
-        plain = f"https://image.tmdb.org/t/p/w1280{bp}"
+        # _img passes a full URL through untouched: mzone data stores
+        # MetaHub backdrop URLs, and raw concatenation produced
+        # 'w1280https://...' -> redirect to a dead URL -> blank hero
+        # on TV (user report 2026-10-30).
+        plain = _img("https://image.tmdb.org/t/p/w1280", bp)
     if not plain:
-        return Response(status=404)
+        # No backdrop in the data at all (e.g. Crystal Lake): MetaHub
+        # serves a background for most IMDb titles - redirect there
+        # instead of returning a blank 404.
+        return Response(status=302, headers={
+            "Location": "https://live.metahub.space/background/"
+                        f"medium/{iid}/img"})
     with _ML_LOCK:
         hit = _MLBG_CACHE.get(iid)
     if hit:
