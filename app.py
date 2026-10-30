@@ -902,6 +902,10 @@ def _to_meta(it, with_videos=False, detail=False):
         # most IMDb titles even when no backdrop is in the data.
         meta["background"] = ("https://live.metahub.space/background/"
                               f"medium/{iid}/img")
+    if not meta["background"] and meta.get("poster"):
+        # Absolute last resort (tmdb:-only titles with no backdrop
+        # anywhere, e.g. tmdb:1085585): the poster beats a blank hero.
+        meta["background"] = meta["poster"]
     if not meta["genres"] and ob.get("genre") and ob["genre"] != "N/A":
         meta["genres"] = [g.strip() for g in ob["genre"].split(",")
                            if g.strip()]
@@ -2527,7 +2531,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.37",
+        "version": "2.4.38",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
