@@ -676,7 +676,7 @@ def _series_videos(it):
     vid_prefix = cid if re.match(r"^tt\d+$", cid) else "tmdb:" + tmdb_id
     cache = _ep_cache_load()
     now = time.time()
-    ck = "tv:" + tmdb_id
+    ck = "tv2:" + tmdb_id  # v2: entries carry episode thumbnails (2026-10-30)
     e = cache.get(ck)
     if e and now - e.get("at", 0) < EP_TTL and e.get("videos"):
         return e["videos"]
@@ -696,13 +696,19 @@ def _series_videos(it):
                 en = ep.get("episode_number")
                 if not isinstance(en, int):
                     continue
-                videos.append({
+                v = {
                     "id": "%s:%d:%d" % (vid_prefix, sn, en),
                     "title": "S%d E%d - %s" % (sn, en, ep.get("name") or ""),
                     "season": sn,
                     "episode": en,
                     "released": ep.get("air_date") or "",
-                })
+                }
+                if ep.get("still_path"):
+                    v["thumbnail"] = ("https://image.tmdb.org/t/p/w500"
+                                      + ep["still_path"])
+                if ep.get("overview"):
+                    v["overview"] = ep["overview"]
+                videos.append(v)
         if videos:
             cache[ck] = {"at": now, "videos": videos}
             _ep_cache_save(cache)
@@ -2516,7 +2522,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.35",
+        "version": "2.4.36",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
