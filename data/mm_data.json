@@ -1,7 +1,7 @@
 {
 "generated": "2026-10-30T06:20:15+05:30",
 "site": "https://moviemirrorsubtitles.com",
-"total": 857,
+"total": 860,
 "missing_imdb": [
 "https://moviemirrorsubtitles.com/the-strait-of-hormuz/"
 ],
@@ -12,6 +12,123 @@
 }
 ],
 "items": [
+{
+"post_url": "https://moviemirrorsubtitles.com/in-the-heart-of-the-sea-2015/",
+"name_ml": "\u0d07\u0d7b \u0d26\u0d3f \u0d39\u0d3e\u0d7c\u0d1f\u0d4d\u0d1f\u0d4d \u0d13\u0d2b\u0d4d \u0d26\u0d3f \u0d38\u0d40",
+"name_en": "In the heart of the sea",
+"year": "2015",
+"imdb_id": "tt1390411",
+"type": "movie",
+"genres": [
+"Action",
+"Adventure",
+"Survival"
+],
+"sub_url": "https://moviemirrorsubtitles.com/wp-content/uploads/2024/07/In.the_.Heart_.of_.the_.Sea_.2015.MovieMirrorSubtitles.srt",
+"poster_url": "https://moviemirrorsubtitles.com/wp-content/uploads/2024/07/In-the-heart-of-the-sea.jpg",
+"omdb": {
+"imdbRating": "6.9",
+"rt": 42,
+"rated": "PG-13",
+"runtime": "122 min",
+"metascore": "47",
+"genre": "Action, Adventure, Biography",
+"director": "Ron Howard",
+"actors": "Chris Hemsworth, Cillian Murphy, Brendan Gleeson",
+"language": "English",
+"fetched": "2026-10-26"
+},
+"mdb": {
+"trakt": 70,
+"letterboxd": 3.1,
+"tomatoes": 42,
+"audience": 54
+},
+"tmdb_id": 205775,
+"poster_path": "/weVvNPfk6FM9vBg3BXtRtNAmiYM.jpg",
+"backdrop_path": "/4LRLz2V63TSwuQhBVNXsbnHxgoY.jpg",
+"overview": "In the winter of 1820, the New England whaling ship Essex is assaulted by something no one could believe\u2014a whale of mammoth size and will, and an almost human sense of vengeance.",
+"media": "movie"
+},
+{
+"post_url": "https://moviemirrorsubtitles.com/the-exorcism-of-god-2022/",
+"name_ml": "\u0d26\u0d3f \u0d0e\u0d15\u0d4d\u0d38\u0d4b\u0d7c\u0d38\u0d3f\u0d38\u0d02 \u0d13\u0d2b\u0d4d \u0d17\u0d4b\u0d21\u0d4d",
+"name_en": "The Exorcism Of God",
+"year": "2022",
+"imdb_id": "tt10362566",
+"type": "movie",
+"genres": [
+"Demonic Possession",
+"Horror"
+],
+"sub_url": "https://moviemirrorsubtitles.com/wp-content/uploads/2024/03/MM_The_Exorcism_of_God_2022_Moviemirror-1.srt",
+"poster_url": "https://moviemirrorsubtitles.com/wp-content/uploads/2024/03/20240316_025623.jpg",
+"omdb": {
+"imdbRating": "5.3",
+"rt": 67,
+"rated": "R",
+"runtime": "98 min",
+"metascore": "41",
+"genre": "Drama, Horror, Thriller",
+"director": "Alejandro Hidalgo",
+"actors": "Hector Kotsifakis, Will Beinbrink, Oscar Flores",
+"language": "Spanish, English",
+"fetched": "2026-10-26"
+},
+"mdb": {
+"trakt": 58,
+"letterboxd": 2.1,
+"tomatoes": 67,
+"audience": 44
+},
+"tmdb_id": 836225,
+"poster_path": "/hangTmbxpSV4gpHG7MgSlCWSSFa.jpg",
+"backdrop_path": "/mjIuTXM4FhLAT1apxHULetAZAfj.jpg",
+"overview": "An American priest working in Mexico is considered a saint by many local parishioners. However, due to a botched exorcism, he carries a secret that\u2019s eating him alive until he gets an opportunity to face his demon one final time.",
+"media": "movie",
+"ml_poster": "https://moviemirrorsubtitles.com/wp-content/uploads/2024/03/20240316_025623-768x1036.jpg",
+"ml_src": "goatmm"
+},
+{
+"post_url": "https://moviemirrorsubtitles.com/the-nun-2018/",
+"name_ml": "\u0d26\u0d3f \u0d28\u0d7a",
+"name_en": "The Nun",
+"year": "2018",
+"imdb_id": "tt5814060",
+"type": "movie",
+"genres": [
+"Demonic Possession",
+"Horror",
+"Thriller"
+],
+"sub_url": "https://moviemirrorsubtitles.com/wp-content/uploads/2024/07/The_Nun_2018_MovieMirrorSubtitles.srt",
+"poster_url": "https://moviemirrorsubtitles.com/wp-content/uploads/2024/07/The-Nun.jpg",
+"omdb": {
+"imdbRating": "5.4",
+"rt": 24,
+"rated": "R",
+"runtime": "96 min",
+"metascore": "46",
+"genre": "Horror, Mystery, Thriller",
+"director": "Corin Hardy",
+"actors": "Demi\u00e1n Bichir, Taissa Farmiga, Jonas Bloquet",
+"language": "English, French, Romanian, Latin",
+"fetched": "2026-10-26"
+},
+"mdb": {
+"trakt": 61,
+"letterboxd": 2.4,
+"tomatoes": 24,
+"audience": 35
+},
+"tmdb_id": 439079,
+"poster_path": "/sFC1ElvoKGdHJIWRpNB3xWJ9lJA.jpg",
+"backdrop_path": "/cMnVmutb5mVgIBeiMOncAbwNjvG.jpg",
+"overview": "A priest with a dark past and a novice nearing her final vows are sent by the Vatican to Romania to investigate a nun's death and face a demonic force.",
+"media": "movie",
+"ml_poster": "https://moviemirrorsubtitles.com/wp-content/uploads/2024/07/20240727_013332-768x1084.jpg",
+"ml_src": "goatmm"
+},
 {
 "post_url": "https://moviemirrorsubtitles.com/the-cycle-2026/",
 "name_ml": "\u0d26 \u0d38\u0d48\u0d15\u0d4d\u0d15\u0d3f\u0d7e",
@@ -1747,7 +1864,7 @@
 "poster_path": "/q3ROA6OqVA9rWSsC2DzdkPQvxWW.jpg",
 "backdrop_path": "/qbbx3NDw6FrtQSrKdxn9n72xJzO.jpg",
 "overview": "Three women fall prey to a ruthless phone scam. To settle the score, they'll take on the criminal network that stole their money \u2014 and their dignity.",
-"ml_poster": "https://moviemirrorsubtitles.com/wp-content/uploads/2026/09/The-Red-Line-768x1083.jpg",
+"ml_poster": "https://malayalamsubtitles.in/img/SZvFp8dz5j-300.webp",
 "ml_src": "goatmm",
 "omdb": {
 "imdbRating": "N/A",
@@ -3416,7 +3533,7 @@
 "poster_path": "/8WEnI0ilBDG8D9Cn0PfsF4IIVta.jpg",
 "backdrop_path": "/8yEQNOA59DFCuNnwDw4L5PdDDeW.jpg",
 "overview": "A short action movie depicting the '1983 Hosan Prison Riot,' an important event in the 'PUBG Universe'.",
-"ml_poster": "https://moviemirrorsubtitles.com/wp-content/uploads/2024/07/20240727_144032-768x1084.jpg",
+"ml_poster": "https://malayalamsubtitles.in/img/l1Qt4hwnBc-300.webp",
 "ml_src": "goatmm",
 "omdb": {
 "imdbRating": "6.5",
@@ -3564,7 +3681,7 @@
 "poster_path": "/2dfaedyVvHli1pmm9HHcoVTDOCH.jpg",
 "backdrop_path": "/8d2s5MP8mc1OXaq7zn6PHv9kWY4.jpg",
 "overview": "David, an orderly at a hospital, tells his horrific story of being kidnapped and forced to play a vile game of survival.",
-"ml_poster": "https://moviemirrorsubtitles.com/wp-content/uploads/2025/03/DocScanner-13-Mar-2025-5-44-pm-768x1041.jpg",
+"ml_poster": "https://malayalamsubtitles.in/img/eXvnlbqyO3-300.webp",
 "ml_src": "goatmm",
 "omdb": {
 "imdbRating": "7.4",
@@ -3802,7 +3919,7 @@
 "backdrop_path": "/sqoOj7o44BveONtkb4tC6GCNyQr.jpg",
 "overview": "In London, Dev, an overweight, genius chef who suffers with muscle spasms, meets Tara and love blossoms, but things take an interesting turn when he crosses paths with Maya.",
 "cert": "U",
-"ml_poster": "https://moviemirrorsubtitles.com/wp-content/uploads/2024/03/20240311_190836-768x1084.jpg",
+"ml_poster": "https://malayalamsubtitles.in/img/Dl3WW0iwIj-300.webp",
 "ml_src": "goatmm",
 "omdb": {
 "imdbRating": "7.5",
@@ -4236,7 +4353,7 @@
 "poster_path": "/mtIm0qbFnQ3oqqDrVpPTJDS6EZK.jpg",
 "backdrop_path": "/i92vV0MMeXZKs9zsYFOpjYYt2s2.jpg",
 "overview": "A mother and her young daughter flee to their family's abandoned mansion but soon find themselves haunted by paranormal incidents that lead to the little girl's mysterious disappearance.",
-"ml_poster": "https://moviemirrorsubtitles.com/wp-content/uploads/2024/12/dch-768x1041.jpg",
+"ml_poster": "https://malayalamsubtitles.in/img/Ajo2CpUFIH-300.webp",
 "ml_src": "goatmm",
 "omdb": {
 "imdbRating": "7.2",
@@ -5059,7 +5176,7 @@
 "poster_path": "/mG334OlDVJpD8gMfTCM2Mpp0gQH.jpg",
 "backdrop_path": "/9jih8et3fkd0Zdo4NHf3cnPj05Z.jpg",
 "overview": "Jordan Turner is an experienced 911 operator but when she makes an error in judgment and a call ends badly, Jordan is rattled and unsure if she can continue. But when teenager Casey Welson is abducted in the back of a man's car and calls 911, Jordan is the one called upon to use all of her experience, insights and quick thinking to help Casey escape, and not just to save her, but to make sure the man is brought to justice.",
-"ml_poster": "https://moviemirrorsubtitles.com/wp-content/uploads/2024/03/20240311_181807-768x1084.jpg",
+"ml_poster": "https://malayalamsubtitles.in/img/smO5xMaj7e-300.webp",
 "ml_src": "goatmm",
 "omdb": {
 "imdbRating": "6.7",
@@ -5686,7 +5803,7 @@
 "poster_path": "/xnoyG3rPuKAHeRbNlwuyiC08Sya.jpg",
 "backdrop_path": "/qpiqVZdWjWEUsm17VLZg18jErNd.jpg",
 "overview": "When a kindergarten teacher takes her 16 students hostage and makes a set of demands, it not only rattles the Mumbai police and the city but also sends shockwaves through the country and its leaders as the motive behind the hostage situation is unearthed.",
-"ml_poster": "https://moviemirrorsubtitles.com/wp-content/uploads/2024/03/20240315_232842-768x1021.jpg",
+"ml_poster": "https://malayalamsubtitles.in/img/gcTrfLDUxi-300.webp",
 "ml_src": "goatmm",
 "omdb": {
 "imdbRating": "7.6",
@@ -6784,7 +6901,7 @@
 "backdrop_path": "/dUudp3ePfKxrWoNnYbCO73v1LHk.jpg",
 "overview": "A jaded forest officer leads a team of trackers and locals intending to capture an unsettled tigress while battling intense obstacles and pressures, both natural and man-made.",
 "cert": "U",
-"ml_poster": "https://moviemirrorsubtitles.com/wp-content/uploads/2024/07/20240728_013956-768x1084.jpg",
+"ml_poster": "https://malayalamsubtitles.in/img/zaxcsc9V9R-300.webp",
 "ml_src": "goatmm",
 "omdb": {
 "imdbRating": "6.8",
@@ -7765,7 +7882,7 @@
 "poster_path": "/7UNGRCoSy80NZOaQ873xZLUT9Ex.jpg",
 "backdrop_path": "/tS55BUHrdJTsFCqCMnHiZCnKftm.jpg",
 "overview": "Arishadvarga is a character-driven neo-noir, about an aspiring actor who opens a Pandora's Box when he seeks out an anonymous client who rewards him with a surprise gift, \"A murder and a witness to his crime\".",
-"ml_poster": "https://moviemirrorsubtitles.com/wp-content/uploads/2024/08/20240804_161112-768x1085.jpg",
+"ml_poster": "https://malayalamsubtitles.in/img/lRj61B9mOn-300.webp",
 "ml_src": "goatmm",
 "omdb": {
 "imdbRating": "6.4",
@@ -10000,7 +10117,7 @@
 "poster_path": "/x2Us3jR6ToMJjbcPbLimYoxf6xr.jpg",
 "backdrop_path": "/gBmrsugfWpiXRh13Vo3j0WW55qD.jpg",
 "overview": "Three years after Jurassic World was destroyed, Isla Nublar now sits abandoned. When the island's dormant volcano begins roaring to life, Owen and Claire mount a campaign to rescue the remaining dinosaurs from this extinction-level event.",
-"ml_poster": "https://moviemirrorsubtitles.com/wp-content/uploads/2024/08/20240804_160801-768x1084.jpg",
+"ml_poster": "https://malayalamsubtitles.in/img/myy7k5GTl5-300.webp",
 "ml_src": "goatmm",
 "omdb": {
 "imdbRating": "6.2",
@@ -10240,7 +10357,7 @@
 "backdrop_path": "/mBijGSEEkIVt24ruvTxFuQWRKJm.jpg",
 "overview": "Two Swedish/Norwegian half sisters go on a winter diving trip in Northern Norway, when they get trapped after a rockslide.",
 "cert": "12",
-"ml_poster": "https://moviemirrorsubtitles.com/wp-content/uploads/2024/12/DocScanner-12-Dec-2024-11-10-am-768x1075.png",
+"ml_poster": "https://malayalamsubtitles.in/img/4IFSjG6jwG-300.webp",
 "ml_src": "goatmm",
 "omdb": {
 "imdbRating": "6.1",
@@ -12529,7 +12646,7 @@
 "poster_path": "/438QXt1E3WJWb3PqNniK0tAE5c1.jpg",
 "backdrop_path": "/dOtH7s8gIP6lt3WfeK4ws8udI3E.jpg",
 "overview": "The story of the Agojie, the all-female unit of warriors who protected the African Kingdom of Dahomey in the 1800s with skills and a fierceness unlike anything the world has ever seen, and General Nanisca as she trains the next generation of recruits and readies them for battle against an enemy determined to destroy their way of life.",
-"ml_poster": "https://moviemirrorsubtitles.com/wp-content/uploads/2024/08/20240803_150928-768x1084.jpg",
+"ml_poster": "https://malayalamsubtitles.in/img/akUqeK2Luw-300.webp",
 "ml_src": "goatmm",
 "omdb": {
 "imdbRating": "6.9",
@@ -13158,7 +13275,7 @@
 "backdrop_path": "/wrM6Ew7GjatE0JQwysvn2Hk4W7I.jpg",
 "overview": "Bahri, a young man who lives in Mekarsari Village. One day, Bahri realized that something was wrong in Mekarsari Village. Out of curiosity, he also found out what was really going on in the village where he lived.",
 "cert": "13+",
-"ml_poster": "https://moviemirrorsubtitles.com/wp-content/uploads/2025/11/Hidaayah-768x1083.jpg",
+"ml_poster": "https://malayalamsubtitles.in/img/ylWj3jLiwm-300.webp",
 "ml_src": "goatmm",
 "omdb": {
 "imdbRating": "N/A",
@@ -14367,7 +14484,7 @@
 "poster_path": "/80slKYVM5teFH3kz6ouWrZXveqj.jpg",
 "backdrop_path": "/39Niij05MXfibXBsHiUU0Ml0POX.jpg",
 "overview": "Years into their relationship, Tim and Millie find themselves at a crossroads as they move to the country, abandoning all that is familiar in their lives except each other. With tensions already flaring, a nightmarish encounter with a mysterious, unnatural force threatens to corrupt their lives, their love, and their flesh.",
-"ml_poster": "https://moviemirrorsubtitles.com/wp-content/uploads/2025/08/Together-768x1041.jpg",
+"ml_poster": "https://malayalamsubtitles.in/img/mkThHk95NQ-300.webp",
 "ml_src": "goatmm",
 "omdb": {
 "imdbRating": "6.7",
@@ -17402,7 +17519,7 @@
 "backdrop_path": "/MYqoCfiLgHogiByMUCEjcVu5uI.jpg",
 "overview": "A small town somewhere in the north. The body of a brutally murdered young girl, Anna, is found by the river. The investigation is taken up by the determined criminalist Laura Linhartov\u00e1 (Krist\u00fdna Ry\u0161ka), and her old colleague Adam Bene\u0161 (Kry\u0161tof H\u00e1dek) is assigned to her. The main suspect is a recently convicted perpetrator who is responsible for a similar murder. Just when it seems that the search for Anna's murderer is over, new evidence appears that brings the whole case back to the beginning. The criminalists thus embark on a complicated investigation full of unexpected twists and turns. The circle of suspects in the small town expands dramatically. The tension between Laura and Adam rises, not to mention their different characters and shared past. And the question still hangs in the air: Who killed Anna Pittnerov\u00e1?",
 "cert": "15+",
-"ml_poster": "https://moviemirrorsubtitles.com/wp-content/uploads/2026/07/IMG-20260705-WA00021-768x1154.jpg",
+"ml_poster": "https://malayalamsubtitles.in/img/NjrkCXmA0f-300.webp",
 "ml_src": "goatmm",
 "omdb": {
 "imdbRating": "6.2",
@@ -25418,7 +25535,7 @@
 "poster_path": "/2cxhvwyEwRlysAmRH4iodkvo0z5.jpg",
 "backdrop_path": "/tOqIwliWMovSIZ9DyvHcHI7p2im.jpg",
 "overview": "Years after witnessing the death of the revered hero Maximus at the hands of his uncle, Lucius is forced to enter the Colosseum after his home is conquered by the tyrannical Emperors who now lead Rome with an iron fist. With rage in his heart and the future of the Empire at stake, Lucius must look to his past to find strength and honor to return the glory of Rome to its people.",
-"ml_poster": "https://moviemirrorsubtitles.com/wp-content/uploads/2024/12/IMG_20241231_181720_192-768x1041.jpg",
+"ml_poster": "https://malayalamsubtitles.in/img/9XFdYWxvfj-300.webp",
 "ml_src": "goatmm",
 "omdb": {
 "imdbRating": "6.4",
@@ -26089,7 +26206,7 @@
 "backdrop_path": "/juEkYxvEJsHZK2GLFr5KVGVmijo.jpg",
 "overview": "Prerana, a hospice counsellor at a palliative care facility, finds a new meaning in her life when she befriends Aniketh, a terminally ill patient suffers from gastrointestinal cancer. Their bond challenges the conventional notions of love, life and humanity.",
 "cert": "U",
-"ml_poster": "https://moviemirrorsubtitles.com/wp-content/uploads/2024/03/Swathi-Mutthina-Male-Haniye-768x1084.jpg",
+"ml_poster": "https://malayalamsubtitles.in/img/-L1g67cfPt-300.webp",
 "ml_src": "goatmm",
 "omdb": {
 "imdbRating": "7.4",
@@ -29911,7 +30028,7 @@
 "poster_path": "/lncg31XDBdfYxrOnhrzVAUw8geT.jpg",
 "backdrop_path": "/lUIAlOzNVKunMHo7lFDqH8eGsWK.jpg",
 "overview": "A young pregnant woman named Mia escapes from a country at war by hiding in a maritime container aboard a cargo ship. After a violent storm, Mia gives birth to the child while lost at sea, where she must fight to survive.",
-"ml_poster": "https://moviemirrorsubtitles.com/wp-content/uploads/2023/12/nover-213x300.jpg",
+"ml_poster": "https://malayalamsubtitles.in/img/IPvtgOeUK3-300.webp",
 "ml_src": "goatmm",
 "omdb": {
 "imdbRating": "6.3",
@@ -31671,7 +31788,7 @@
 "poster_path": "/v7UF7ypAqjsFZFdjksjQ7IUpXdn.jpg",
 "backdrop_path": "/AdBXP8e6K3FYdDrMx3Wr6WZqCYF.jpg",
 "overview": "A charming thief and a band of unlikely adventurers undertake an epic heist to retrieve a lost relic, but things go dangerously awry when they run afoul of the wrong people.",
-"ml_poster": "https://moviemirrorsubtitles.com/wp-content/uploads/2024/08/20240804_015316-768x1084.jpg",
+"ml_poster": "https://malayalamsubtitles.in/img/XAgSkKv9mM-300.webp",
 "ml_src": "goatmm",
 "omdb": {
 "imdbRating": "7.2",
@@ -32441,7 +32558,7 @@
 "poster_path": "/n9OzZmPMnVrV0cMQ7amX0DtBkQH.jpg",
 "backdrop_path": "/iJiyR6hhMpgsx8nPppHjnbugh9f.jpg",
 "overview": "A recently widowed traveler is kidnapped by a cold blooded killer, only to escape into the wilderness where she is forced to battle against the elements as her pursuer closes in on her.",
-"ml_poster": "https://moviemirrorsubtitles.com/wp-content/uploads/2025/01/IMG_20250124_201923_364-768x1041.jpg",
+"ml_poster": "https://malayalamsubtitles.in/img/dzBslWNMYc-300.webp",
 "ml_src": "goatmm",
 "omdb": {
 "imdbRating": "6.2",
@@ -32641,7 +32758,7 @@
 "backdrop_path": "/ox397T8A72yVdwB3lhwtQF9eZAd.jpg",
 "overview": "A realtor who loves sneaking into people's homes finds the dead body of a scamming social media influencer \u2013 can he find out who did it?",
 "cert": "15",
-"ml_poster": "https://moviemirrorsubtitles.com/wp-content/uploads/2025/02/Following-768x1041.jpg",
+"ml_poster": "https://malayalamsubtitles.in/img/QdI3TxGXiy-300.webp",
 "ml_src": "goatmm",
 "omdb": {
 "imdbRating": "6.5",
@@ -32760,7 +32877,7 @@
 "poster_path": "/xOA4MbyJZVJHGZ38wC4LPpruBBX.jpg",
 "backdrop_path": "/tr0QbJHWjI3pWhY75oTNl3o9lcC.jpg",
 "overview": "Vitoria-Gasteiz, Basque Country, Spain, 2019. Two corpses appear in the crypt of the Old Cathedral. Police officer Unai L\u00f3pez de Ayala, an expert in criminal profiling, must hunt down the ritual murderer who has been terrorizing the city for two decades.",
-"ml_poster": "https://moviemirrorsubtitles.com/wp-content/uploads/2025/02/Twin-Murders-768x1041.jpg",
+"ml_poster": "https://malayalamsubtitles.in/img/1N7oaG1Jls-300.webp",
 "ml_src": "goatmm",
 "omdb": {
 "imdbRating": "5.4",
@@ -33206,7 +33323,7 @@
 "poster_path": "/5NAdIXaF2AhewMFMqFvbxZmDC3M.jpg",
 "backdrop_path": "/cLXvsCO4KfWSLaXPnJF9GL0NKeg.jpg",
 "overview": "When a girl's body is found on a beach in Poland's Tricity, a prosecutor teams up with the victim's mother on an impassioned quest for the truth.",
-"ml_poster": "https://moviemirrorsubtitles.com/wp-content/uploads/2025/03/colors-of-evil-red-768x1041.jpg",
+"ml_poster": "https://malayalamsubtitles.in/img/5EDa8t-5E2-300.webp",
 "ml_src": "goatmm",
 "omdb": {
 "imdbRating": "6.4",
