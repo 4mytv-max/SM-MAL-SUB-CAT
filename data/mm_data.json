@@ -1,7 +1,7 @@
 {
 "generated": "2026-10-30T06:20:15+05:30",
 "site": "https://moviemirrorsubtitles.com",
-"total": 860,
+"total": 861,
 "missing_imdb": [
 "https://moviemirrorsubtitles.com/the-strait-of-hormuz/"
 ],
@@ -12,6 +12,41 @@
 }
 ],
 "items": [
+{
+"post_url": "https://moviemirrorsubtitles.com/resident-evil-2026/",
+"name_ml": "\u0d31\u0d46\u0d38\u0d3f\u0d21\u0d28\u0d4d\u0d31\u0d4d\u200c \u0d08\u0d35\u0d3f\u0d7e",
+"name_en": "Resident Evil",
+"year": "2026",
+"imdb_id": "tt35538033",
+"type": "movie",
+"genres": [
+"Horror",
+"Sci-fi"
+],
+"sub_url": "https://moviemirrorsubtitles.com/wp-content/uploads/2026/11/Resident.Evil_.2026.WEB-DL.MovieMirror-1.srt",
+"poster_url": "https://moviemirrorsubtitles.com/wp-content/uploads/2026/11/Resident-Evil.jpg",
+"_lastmod": "2026-11-02T14:34:49+00:00",
+"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/10/Resident.Evil_.2026.-B.jpg.webp",
+"ml_src": "msone",
+"omdb": {
+"imdbRating": "N/A",
+"rt": 96,
+"rated": "R",
+"runtime": "90 min",
+"metascore": "N/A",
+"genre": "Action, Horror, Sci-Fi",
+"director": "Zach Cregger",
+"actors": "Austin Abrams, Paul Walter Hauser, Zach Cherry",
+"language": "English",
+"fetched": "2026-10-26"
+},
+"mdb": {
+"trakt": 76,
+"letterboxd": 3.7,
+"tomatoes": 96,
+"audience": 90
+}
+},
 {
 "post_url": "https://moviemirrorsubtitles.com/in-the-heart-of-the-sea-2015/",
 "name_ml": "\u0d07\u0d7b \u0d26\u0d3f \u0d39\u0d3e\u0d7c\u0d1f\u0d4d\u0d1f\u0d4d \u0d13\u0d2b\u0d4d \u0d26\u0d3f \u0d38\u0d40",
@@ -2734,7 +2769,7 @@
 "poster_path": "/tYLecM3WSEjlkKhkGiH5G68Dprm.jpg",
 "backdrop_path": "/enVrO8TRkdT8dmYXTfI4sEjR5Kp.jpg",
 "overview": "An unrivalled and highly elusive lone assassin, the Jackal, makes his living carrying out hits for the highest fee. But following his latest kill, he meets his match in a tenacious British intelligence officer who starts to track down the Jackal in a thrilling cat-and-mouse chase across Europe, leaving destruction in its wake.",
-"ml_poster": "https://moviemirrorsubtitles.com/wp-content/uploads/2025/01/Jackal-1-768x1041.jpg",
+"ml_poster": "https://moviemirrorsubtitles.com/wp-content/uploads/2025/01/The-day-of-the-jackal-768x1083.jpg",
 "ml_src": "goatmm",
 "omdb": {
 "imdbRating": "8.1",
