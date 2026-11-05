@@ -1,7 +1,7 @@
 {
 "generated": "2026-10-30T06:20:15+05:30",
 "site": "https://moviemirrorsubtitles.com",
-"total": 861,
+"total": 863,
 "missing_imdb": [
 "https://moviemirrorsubtitles.com/the-strait-of-hormuz/"
 ],
@@ -33651,6 +33651,58 @@
 "tomatoes": 81,
 "audience": 87
 }
+},
+{
+"post_url": "https://moviemirrorsubtitles.com/who-killed-cock-robin-2017/",
+"name_ml": "\u0d39\u0d42 \u0d15\u0d3f\u0d7d\u0d21\u0d4d \u0d15\u0d4b\u0d15\u0d4d\u0d15\u0d4d \u0d31\u0d4b\u0d2c\u0d3f\u0d7b?",
+"name_en": "Who killed Cock Robin?",
+"year": "2017",
+"imdb_id": "tt5576318",
+"type": "movie",
+"genres": [
+"Crime",
+"Mystery",
+"Thriller"
+],
+"sub_url": "https://moviemirrorsubtitles.com/wp-content/uploads/2026/11/Who.Killed.Cock_.Robin_.2017.720p-.BluRay.x264-@lubokvideo.mkv@MMSubtitiles.srt",
+"poster_url": "https://moviemirrorsubtitles.com/wp-content/uploads/2026/11/IMG_20261104_163110_145.jpg",
+"_lastmod": "2026-11-04T14:28:33+00:00",
+"tmdb_id": 448337,
+"media": "movie",
+"poster_path": "/a9qzcgV0w7U4BiYSAhMrB7h34m8.jpg",
+"backdrop_path": "/p0JEbE5LiLpKqtq9P0pSQZdBex.jpg",
+"overview": "An ambitious journalist who witnessed a hit-and-run years ago reboots his investigation led by newly emerged clues. As he beats the clock to save the only survivor after her sudden disappearance, layers of unimaginable dark truths around a corrupted system start peeling.",
+"omdb": {
+"imdbRating": "7.1",
+"rt": 40,
+"rated": "N/A",
+"runtime": "118 min",
+"metascore": "N/A",
+"genre": "Crime, Mystery, Thriller",
+"director": "Wei-Hao Cheng",
+"actors": "Kaiser Chuang, Wei-Ning Hsu, Chia-Yen Ko",
+"language": "Mandarin, Min Nan",
+"fetched": "2026-10-26"
+},
+"ml_poster": "https://moviemirrorsubtitles.com/wp-content/uploads/2026/11/IMG_20261104_163110_145-768x1083.jpg",
+"ml_src": "goatmm"
+},
+{
+"post_url": "https://moviemirrorsubtitles.com/strange-darling-2023/",
+"name_ml": "\u0d38\u0d4d\u200c\u0d1f\u0d4d\u0d30\u0d47\u0d1e\u0d4d\u0d1a\u0d4d \u0d21\u0d3e\u0d7c\u0d32\u0d3f\u0d02\u0d17\u0d4d",
+"name_en": "Strange Darling",
+"year": "2023",
+"imdb_id": "tt22375054",
+"type": "movie",
+"genres": [
+"Psychological",
+"Thriller"
+],
+"sub_url": "https://moviemirrorsubtitles.com/wp-content/uploads/2024/10/Strange.Darling.2023.720p.WEBRip@moviemirror.srt",
+"poster_url": "https://moviemirrorsubtitles.com/wp-content/uploads/2024/10/Strange-Darling.jpg",
+"_lastmod": "2026-11-04T14:09:09+00:00",
+"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2024/11/Strange-Darling-2023P3.jpg.webp",
+"ml_src": "msone"
 }
 ]
 }
