@@ -1,13 +1,52 @@
 {
-"generated": "2026-10-29T06:36:16+05:30",
+"generated": "2026-11-06T00:31:25",
 "site": "https://malayalamsubtitles.in",
-"total": 521,
+"total": 522,
 "missing_imdb": [
 "https://malayalamsubtitles.in/release/dahmer-monster-the-jefry-dahmer-story-2022/",
 "https://malayalamsubtitles.in/release/one-fine-week-2019/"
 ],
 "errors": [],
 "items": [
+{
+"post_url": "https://malayalamsubtitles.in/release/aliwan-inn-2025/",
+"name_en": "ALIWAN INN",
+"name_ml": "\u0d05\u0d32\u0d3f\u0d35\u0d3e\u0d7b \u0d07\u0d7b",
+"year": "2025",
+"imdb_id": "tt39018785",
+"type": "movie",
+"genres": [
+"Drama"
+],
+"language": "\u0d1f\u0d3e\u0d17\u0d32\u0d4b\u0d17\u0d4d",
+"director": "Roman Perez Jr.",
+"translator": "\u0d32\u0d41\u0d1f\u0d4d\u0d1f\u0d3e\u0d2a\u0d4d\u0d2a\u0d3f",
+"sub_url": "https://wp.malayalamsubtitles.in/download/2017",
+"site_poster": "https://malayalamsubtitles.in/img/8KY8yKVfhR-1111.webp",
+"poster_url": "https://malayalamsubtitles.in/img/goatblack.webp",
+"tmdb_id": 1588858,
+"media": "movie",
+"poster_path": "/jq4sOUJZkGd9PVxiDly2UIn7d0Z.jpg",
+"backdrop_path": "/gc2HXY2oJPW0D2iohFvkPrOE9o1.jpg",
+"overview": "A timid staff member secretly fantasizes about the motel's alluring regular guest, who is a known hooker. He finds himself realizing his wildest fantasies when one encounter with his dream girl leads to nights of passion in the town's most sinful inn.",
+"omdb": {
+"imdbRating": "N/A",
+"rt": null,
+"rated": "N/A",
+"runtime": "74 min",
+"metascore": "N/A",
+"genre": "Drama",
+"director": "Roman Perez Jr.",
+"actors": "Ali Asistio, Margaret Diaz, Rinoa Halili",
+"language": "Tagalog, Filipino",
+"fetched": "2026-11-06"
+},
+"mdb": {
+"trakt": 58
+},
+"ml_poster": "https://malayalamsubtitles.in/img/8KY8yKVfhR-300.webp",
+"ml_src": "goatmm"
+},
 {
 "post_url": "https://malayalamsubtitles.in/release/forbidden-lust-2004/",
 "name_en": "FORBIDDEN LUST",
@@ -26,6 +65,8 @@
 "sub_url": "https://wp.malayalamsubtitles.in/download/2014",
 "site_poster": "https://malayalamsubtitles.in/img/5DVvyYuE-3-1111.webp",
 "poster_url": "https://malayalamsubtitles.in/img/goatblack.webp",
+"ml_poster": "https://malayalamsubtitles.in/img/5DVvyYuE-3-300.webp",
+"ml_src": "goatmm",
 "omdb": {
 "imdbRating": "N/A",
 "rt": null,
@@ -40,9 +81,7 @@
 },
 "mdb": {
 "trakt": 100
-},
-"ml_poster": "https://malayalamsubtitles.in/img/5DVvyYuE-3-300.webp",
-"ml_src": "goatmm"
+}
 },
 {
 "post_url": "https://malayalamsubtitles.in/release/barreda-husband-father-murderer-2026/",
@@ -98,6 +137,8 @@
 "sub_url": "https://wp.malayalamsubtitles.in/download/2002",
 "site_poster": "https://malayalamsubtitles.in/img/eawTAmLkf1-1111.webp",
 "poster_url": "https://malayalamsubtitles.in/img/goatblack.webp",
+"ml_poster": "https://malayalamsubtitles.in/img/eawTAmLkf1-300.webp",
+"ml_src": "goatmm",
 "omdb": {
 "imdbRating": "N/A",
 "rt": 100,
@@ -115,9 +156,7 @@
 "letterboxd": 3.6,
 "tomatoes": 98,
 "audience": 84
-},
-"ml_poster": "https://malayalamsubtitles.in/img/eawTAmLkf1-300.webp",
-"ml_src": "goatmm"
+}
 },
 {
 "post_url": "https://malayalamsubtitles.in/release/ek-villain-returns-2022/",
@@ -138,6 +177,8 @@
 "sub_url": "https://wp.malayalamsubtitles.in/download/1999",
 "site_poster": "https://malayalamsubtitles.in/img/OTqblp2W6R-1111.webp",
 "poster_url": "https://malayalamsubtitles.in/img/goatblack.webp",
+"ml_poster": "https://malayalamsubtitles.in/img/OTqblp2W6R-300.webp",
+"ml_src": "goatmm",
 "omdb": {
 "imdbRating": "4.4",
 "rt": 0,
@@ -153,9 +194,7 @@
 "mdb": {
 "trakt": 49,
 "letterboxd": 2.0
-},
-"ml_poster": "https://malayalamsubtitles.in/img/OTqblp2W6R-300.webp",
-"ml_src": "goatmm"
+}
 },
 {
 "post_url": "https://malayalamsubtitles.in/release/immaculate-2024/",
@@ -21332,7 +21371,7 @@
 "name_en": "ONE FINE WEEK",
 "name_ml": "\u0d12\u0d7a \u0d2b\u0d48\u0d7b \u0d35\u0d40\u0d15\u0d4d\u0d15\u0d4d\u200c",
 "year": "2019",
-"imdb_id": "tt14714860",
+"imdb_id": null,
 "type": "series",
 "genres": [
 "Comedy",
