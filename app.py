@@ -976,6 +976,11 @@ def _tmdb_search_enrich(title_en, year, prefer_tv=False):
         # &year=2026 returns Friday the 13th (2009) as its only hit, and
         # a transient empty TV search let the live row take that wrong
         # identity for the Crystal Lake (2026) series post.
+        # Window is +-3, not +-1 (2026-11-06): a film's festival-premiere
+        # year (the source post's year) can lag its TMDB release year by
+        # 2 - The Fall premiered 2006 but TMDB lists 2008, and the +-1
+        # window rejected the true film while accepting the same-prefix
+        # documentary "The Fall of Fujimori" (2006) instead.
         if yint is None:
             return True
         d = (r.get("release_date") if mtype == "movie"
@@ -983,7 +988,22 @@ def _tmdb_search_enrich(title_en, year, prefer_tv=False):
         m = re.match(r"(\d{4})", d)
         if not m:
             return False
-        return abs(int(m.group(1)) - yint) <= 1
+        return abs(int(m.group(1)) - yint) <= 3
+
+    def _title_ok(r, mtype):
+        # Identity guard (2026-11-06, The Fall incident): the candidate's
+        # TMDB title (or original title) must equal the searched title
+        # after normalization. A same-prefix or same-word title is a
+        # DIFFERENT title - "The Fall of Fujimori" must never match
+        # "The Fall", whatever the year says. This also covers the
+        # Crystal Lake guard above: "Friday the 13th" cannot match
+        # "Crystal Lake" on title alone.
+        q = _norm_title(title_en)
+        if not q:
+            return False
+        keys = (("title", "original_title") if mtype == "movie"
+                else ("name", "original_name"))
+        return any(_norm_title(r.get(k) or "") == q for k in keys)
 
     try:
         q = urllib.parse.quote(title_en)
@@ -1006,7 +1026,8 @@ def _tmdb_search_enrich(title_en, year, prefer_tv=False):
                 # scanning the whole page for any year-compatible entry
                 # lets an obscure same-name title (a 2025 fan film,
                 # "Memorias de Crystal Lake 2") beat the real match.
-                r = next((x for x in results[:3] if _year_ok(x, mtype)),
+                r = next((x for x in results[:3]
+                          if _title_ok(x, mtype) and _year_ok(x, mtype)),
                          None)
                 if r:
                     # get imdb id via details
@@ -2531,7 +2552,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.40",
+        "version": "2.4.41",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
