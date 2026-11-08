@@ -1,7 +1,7 @@
 {
 "generated": "2026-11-06T00:30:14",
 "site": "https://moviemirrorsubtitles.com",
-"total": 864,
+"total": 866,
 "missing_imdb": [
 "https://moviemirrorsubtitles.com/the-strait-of-hormuz/"
 ],
@@ -12,6 +12,72 @@
 }
 ],
 "items": [
+{
+"post_url": "https://moviemirrorsubtitles.com/beware-boina-2026/",
+"name_ml": "\u0d2c\u0d3f\u0d35\u0d46\u0d2f\u0d7c \u0d2c\u0d4b\u0d2f\u0d42\u0d28",
+"name_en": "Beware Boi\u00fana",
+"year": "2026",
+"imdb_id": "tt10377864",
+"type": "movie",
+"genres": [
+"Action",
+"Horror",
+"Thriller"
+],
+"sub_url": "https://moviemirrorsubtitles.com/wp-content/uploads/2026/11/Beware_Boiuna_2026_1080p_AMZN_WEB_DL_DDP5_1_H_264@MMsubtitiles.srt",
+"poster_url": "https://moviemirrorsubtitles.com/wp-content/uploads/2026/11/Beware-Boiuna-1.jpg",
+"_lastmod": "2026-11-07T14:45:40+00:00",
+"tmdb_id": 1244523,
+"media": "movie",
+"poster_path": "/uW5YMPxJUzT9bkafrCKHXjPTCoQ.jpg",
+"backdrop_path": "/9nU0FKNefmhbgi2xXlvZchZsqwm.jpg",
+"overview": "A medical mission deep in the Amazon becomes a desperate fight for survival when a colossal ancient predator awakens, turning the jungle into a deadly battleground where nature decides who lives and dies.",
+"mdb": {
+"trakt": 63,
+"letterboxd": 2.8
+},
+"ml_poster": "https://moviemirrorsubtitles.com/wp-content/uploads/2026/11/Beware-Boiuna-768x1083.jpg",
+"ml_src": "goatmm"
+},
+{
+"post_url": "https://moviemirrorsubtitles.com/heart-of-the-beast2026/",
+"name_ml": "\u0d39\u0d3e\u0d7c\u0d1f\u0d4d\u0d1f\u0d4d \u0d13\u0d2b\u0d4d \u0d26 \u0d2c\u0d40\u0d38\u0d4d\u0d31\u0d4d\u0d31\u0d4d",
+"name_en": "Heart of the Beast",
+"year": "2026",
+"imdb_id": "tt7526136",
+"type": "movie",
+"genres": [
+"Survival",
+"Adventure",
+"Drama"
+],
+"sub_url": "https://moviemirrorsubtitles.com/wp-content/uploads/2026/11/Heart-of-the-Beast-2026-1080p.@MMSubs.srt",
+"poster_url": "https://moviemirrorsubtitles.com/wp-content/uploads/2026/11/Heart-of-the-Beast.jpg",
+"_lastmod": "2026-11-07T13:38:51+00:00",
+"tmdb_id": 1263337,
+"media": "movie",
+"poster_path": "/6sYemVUn79UPKz1ZsSG6kPU4RVy.jpg",
+"backdrop_path": "/kpqsljPQtWqPKJBTAEtoXtQZ9Ko.jpg",
+"overview": "After a harrowing plane crash, Special Forces officer James Belmont and his combat dog, Odin, find themselves stranded deep in the Alaskan wilderness. Together, they are forced into a brutal fight for survival against the elements.",
+"omdb": {
+"imdbRating": "7.5",
+"rt": 85,
+"rated": "PG-13",
+"runtime": "101 min",
+"metascore": "N/A",
+"genre": "Action, Adventure, Drama",
+"director": "David Ayer",
+"actors": "Brad Pitt, J.K. Simmons, Anna Lambe",
+"language": "English",
+"fetched": "2026-11-07"
+},
+"mdb": {
+"trakt": 79,
+"letterboxd": 3.3
+},
+"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/11/Heart.of_.the_.Beast_.2026-B.jpg.webp",
+"ml_src": "msone"
+},
 {
 "post_url": "https://moviemirrorsubtitles.com/the-fall-2006/",
 "name_ml": "\u0d26 \u0d2b\u0d4b\u0d7e",
