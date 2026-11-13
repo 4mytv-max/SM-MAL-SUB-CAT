@@ -541,21 +541,23 @@ def _items_for_cat(cat):
             if it.get("media") == "tv":
                 series.append(it)
         return series
-    # Full source rows, newest first (user 2026-10-29) - but each
-    # data file's native order differs, verified against the sites'
-    # latest posts: the Msone archive is stored newest-first already
-    # (head = Dead of Winter, Tenzing; its tail is a classics
-    # backfill), while the GOAT and MM files are in crawl order,
-    # oldest first (tails = MURDER GAME / It's Not Me), so only
-    # those two are reversed. Raw file order put GOAT/MM's newest at
-    # the very END of the row (MURDER GAME at 449/449), which looked
-    # "not updated"; reversing Msone would break it the other way.
+    # Full source rows, newest first (user 2026-10-29, re-ordered
+    # 2026-11-13). ALL THREE data files are stored newest-first:
+    # the incremental refresh scripts PREPEND each new batch
+    # (goat_catalog/mm_catalog refresh_incremental.py:
+    # items = new_items + data["items"]), so file head = most
+    # recently subtitled. Verified 2026-11-13: GOAT head = RAMBO 3 /
+    # RAMBO FIRST BLOOD PART 2 (added 2026-11-10, the latest batch),
+    # MM head = Savage Prey (_lastmod 2026-11-12), Msone archive
+    # head = Child's Play. NO reversal anywhere: an earlier [::-1]
+    # here (based on a wrong oldest-first assumption) buried the
+    # newest titles at the END of the GOAT/MM full rows.
     if kind == "full_msone":
         return _full_msone_items()
     if kind == "full_goat":
-        return _full_goat_items()[::-1]
+        return _full_goat_items()
     if kind == "full_mm":
-        return _full_mm_items()[::-1]
+        return _full_mm_items()
     if kind == "doc_natsci":
         # nature & science documentary series (Discovery/NatGeo style)
         return [it for it in items
@@ -2552,7 +2554,7 @@ def manifest():
     base = request.url_root.rstrip("/")
     return jsonify({
         "id": "com.smmal.catsub.v2",
-        "version": "2.4.41",
+        "version": "2.4.42",
         "name": "Suresh Mulla MAL CATALOG v2",
         "logo": f"{base}/static/logo.png",
         "description": "Malayalam movies, series & documentaries catalog "
