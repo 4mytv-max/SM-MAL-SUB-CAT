@@ -1,7 +1,25 @@
 {
-"generated": "2026-11-13T02:14:08",
+"generated": "2026-11-14T00:34:10",
 "sections": {
 "New Releases": [
+{
+"id": 1659441,
+"type": "movie",
+"media": "movie",
+"name": "Savage Prey",
+"name_ml": "\u0d38\u0d3e\u0d35\u0d47\u0d1c\u0d4d \u0d2a\u0d4d\u0d30\u0d47",
+"year": "2026",
+"poster_path": "/sw51DrxbE1PuJxiqfl3dsZHA3tX.jpg",
+"backdrop_path": "/aLKeC5KEC4YQEwyZcXOivHJHlq4.jpg",
+"overview": "In the remote Scottish Highlands, a desperate mother searches for her missing son, finding herself trapped in a twisted struggle for survival.",
+"genre_ids": [
+53
+],
+"post_url": "https://malayalamsubtitles.org/languages/english/savage-prey-2026/",
+"imdb_id": "tt38072958",
+"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/11/Savage-Prey-2026.jpg.webp",
+"ml_src": "msone"
+},
 {
 "id": 10585,
 "type": "movie",
@@ -57,7 +75,7 @@
 ],
 "post_url": "https://malayalamsubtitles.org/languages/english/the-odyssey-2026/",
 "imdb_id": "tt33764258",
-"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/11/The-Odyssey-2026-B.jpg.webp",
+"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/11/The-Odyssey-2026-A.jpg.webp",
 "ml_src": "msone",
 "cert": "R"
 },
@@ -77,7 +95,7 @@
 ],
 "post_url": "https://malayalamsubtitles.org/languages/english/heart-of-the-beast-2026/",
 "imdb_id": "tt7526136",
-"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/11/Heart.of_.the_.Beast_.2026-B.jpg.webp",
+"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/11/Heart.of_.the_.Beast_.2026-A.jpg.webp",
 "ml_src": "msone"
 },
 {
@@ -117,7 +135,7 @@
 ],
 "post_url": "https://malayalamsubtitles.org/languages/english/resident-evil-2026/",
 "imdb_id": "tt35538033",
-"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/10/Resident.Evil_.2026.-B.jpg.webp",
+"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/10/Resident.Evil_.2026.-A.jpg.webp",
 "ml_src": "msone"
 },
 {
@@ -535,6 +553,24 @@
 },
 "archive": [
 {
+"id": 1659441,
+"type": "movie",
+"media": "movie",
+"name": "Savage Prey",
+"name_ml": "\u0d38\u0d3e\u0d35\u0d47\u0d1c\u0d4d \u0d2a\u0d4d\u0d30\u0d47",
+"year": "2026",
+"poster_path": "/sw51DrxbE1PuJxiqfl3dsZHA3tX.jpg",
+"backdrop_path": "/aLKeC5KEC4YQEwyZcXOivHJHlq4.jpg",
+"overview": "In the remote Scottish Highlands, a desperate mother searches for her missing son, finding herself trapped in a twisted struggle for survival.",
+"genre_ids": [
+53
+],
+"post_url": "https://malayalamsubtitles.org/languages/english/savage-prey-2026/",
+"imdb_id": "tt38072958",
+"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/11/Savage-Prey-2026.jpg.webp",
+"ml_src": "msone"
+},
+{
 "id": 10585,
 "type": "movie",
 "media": "movie",
@@ -589,7 +625,7 @@
 ],
 "post_url": "https://malayalamsubtitles.org/languages/english/the-odyssey-2026/",
 "imdb_id": "tt33764258",
-"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/11/The-Odyssey-2026-B.jpg.webp",
+"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/11/The-Odyssey-2026-A.jpg.webp",
 "ml_src": "msone",
 "cert": "R"
 },
@@ -609,7 +645,7 @@
 ],
 "post_url": "https://malayalamsubtitles.org/languages/english/heart-of-the-beast-2026/",
 "imdb_id": "tt7526136",
-"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/11/Heart.of_.the_.Beast_.2026-B.jpg.webp",
+"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/11/Heart.of_.the_.Beast_.2026-A.jpg.webp",
 "ml_src": "msone"
 },
 {
@@ -649,7 +685,7 @@
 ],
 "post_url": "https://malayalamsubtitles.org/languages/english/resident-evil-2026/",
 "imdb_id": "tt35538033",
-"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/10/Resident.Evil_.2026.-B.jpg.webp",
+"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/10/Resident.Evil_.2026.-A.jpg.webp",
 "ml_src": "msone"
 },
 {
