@@ -1,13 +1,33 @@
 {
-"generated": "2026-11-14T00:30:41",
+"generated": "2026-11-15T00:30:24",
 "site": "https://malayalamsubtitles.in",
-"total": 526,
+"total": 527,
 "missing_imdb": [
 "https://malayalamsubtitles.in/release/dahmer-monster-the-jefry-dahmer-story-2022/",
 "https://malayalamsubtitles.in/release/one-fine-week-2019/"
 ],
 "errors": [],
 "items": [
+{
+"post_url": "https://malayalamsubtitles.in/release/king-of-comedy-1999/",
+"name_en": "KING OF COMEDY",
+"name_ml": "\u0d15\u0d3f\u0d19\u0d4d \u0d13\u0d2b\u0d4d \u0d15\u0d4b\u0d2e\u0d21\u0d3f",
+"year": "1999",
+"imdb_id": "tt0188766",
+"type": "movie",
+"genres": [
+"Romance",
+"Comedy"
+],
+"language": "\u0d15\u0d7b\u0d4d\u0d31\u0d4b\u0d23\u0d40\u0d38\u0d4d",
+"director": "Stephen Chow, Lik-Chi Lee",
+"translator": "\u0d37\u0d3e\u0d2b\u0d3f \u0d35\u0d46\u0d7d\u0d2b\u0d46\u0d2f\u0d7c",
+"sub_url": "https://wp.malayalamsubtitles.in/download/2037",
+"site_poster": "https://malayalamsubtitles.in/img/oLQRDa1ZDf-1111.webp",
+"poster_url": "https://malayalamsubtitles.in/img/goatblack.webp",
+"ml_poster": "https://malayalamsubtitles.in/img/oLQRDa1ZDf-300.webp",
+"ml_src": "goatmm"
+},
 {
 "post_url": "https://malayalamsubtitles.in/release/motor-city-2025/",
 "name_en": "MOTOR CITY",
@@ -741,7 +761,9 @@
 "backdrop_path": "/6VsJhrSpatiowoLctdK8BdzmpQB.jpg",
 "overview": "When the boss' unlucky daughter is missing in South America, Campana is sent to watch the boss' most unlucky employee who is sent as a private detective in hopes he can duplicate the daughter's mistakes.",
 "_fallback": true,
-"cert": "12"
+"cert": "12",
+"ml_poster": "https://malayalamsubtitles.in/img/SKTdJohmac-300.webp",
+"ml_src": "goatmm"
 },
 {
 "post_url": "https://malayalamsubtitles.in/release/tuner-2025/",
@@ -11730,7 +11752,7 @@
 "poster_path": "/8Mckh3qJRTzXTQNZtpb133RHmO4.jpg",
 "backdrop_path": "/2c3PCbxVgWen5HrYsaukUmfu4J9.jpg",
 "overview": "With Hawaii's four kingdoms divided by war, the ferocious warrior Ka\u02bbiana embarks on an epic mission to unite his people\u2014as an existential threat approaches their shores.",
-"ml_poster": "https://moviemirrorsubtitles.com/wp-content/uploads/2025/08/COW-768x1041.jpg",
+"ml_poster": "https://malayalamsubtitles.in/img/uJll8DSEq1-300.webp",
 "ml_src": "goatmm"
 },
 {
