@@ -1,7 +1,27 @@
 {
-"generated": "2026-11-16",
+"generated": "2026-11-17",
 "sections": {
 "New Releases": [
+{
+"id": 299534,
+"type": "movie",
+"media": "movie",
+"name": "Avengers: Endgame Encore",
+"name_ml": "\u0d05\u0d35\u0d1e\u0d4d\u0d1a\u0d47\u0d34\u0d4d\u200c\u0d38\u0d4d: \u0d0e\u0d7b\u0d21\u0d4d\u0d17\u0d46\u0d2f\u0d3f\u0d02 \u0d0e\u0d7b\u0d15\u0d4b\u0d7c",
+"year": "2026",
+"poster_path": "/jtDv3lCnST0fZRvdYFwR5CVwK2x.jpg",
+"backdrop_path": "/7RyHsO4yDXtBv1zUU3mTpHeQ0d5.jpg",
+"overview": "After the devastating events of Avengers: Infinity War, the universe is in ruins due to the efforts of the Mad Titan, Thanos. With the help of remaining allies, the Avengers must assemble once more in order to undo Thanos' actions and restore order to the universe once and for all, no matter what consequences may be in store.",
+"genre_ids": [
+12,
+878,
+28
+],
+"post_url": "https://malayalamsubtitles.org/languages/english/avengers-endgame-2026/",
+"imdb_id": "tt4154796",
+"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2019/08/Avengers.Endgame.Encore-A.jpg.webp",
+"ml_src": "msone"
+},
 {
 "id": 1127384,
 "type": "movie",
@@ -177,27 +197,6 @@
 "post_url": "https://malayalamsubtitles.org/languages/english/rambo-first-blood-part-ii-1985/",
 "imdb_id": "tt0089880",
 "ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/11/Rambo_2_poster_final.jpg.webp",
-"ml_src": "msone"
-},
-{
-"id": 38234,
-"type": "movie",
-"media": "movie",
-"name": "Undisputed III: Redemption",
-"name_ml": "\u0d05\u0d7a\u0d21\u0d3f\u0d38\u0d4d\u0d2a\u0d4d\u0d2f\u0d42\u0d1f\u0d4d\u0d1f\u0d1f\u0d4d III: \u0d31\u0d3f\u0d21\u0d02\u0d2a\u0d4d\u0d37\u0d7b",
-"year": "2010",
-"poster_path": "/g8KB77SPA7SyU8eid6TAEpt9skU.jpg",
-"backdrop_path": "/fTZlSRATSk7QJyUrpbmjScDtY8Z.jpg",
-"overview": "Russian inmate Boyka, now severely hobbled by the knee injury suffered at the end of Undisputed 2. No longer the feared prison fighter he was, he has declined so far that he is now good only for cleaning toilets. But when a new prison fight tournament begins - an international affair, matching the best fighters from prisons around the globe, enticing them with the promise of freedom for the winner - Boyka must reclaim his dignity and fight for his position in the tournament.",
-"genre_ids": [
-28,
-53,
-80,
-18
-],
-"post_url": "https://malayalamsubtitles.org/languages/english/undisputed-iii-redemption-2010/",
-"imdb_id": "tt1156466",
-"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/10/Undisputed-III-Redemption-2010.jpg.webp",
 "ml_src": "msone"
 }
 ],
@@ -533,6 +532,26 @@
 ]
 },
 "archive": [
+{
+"id": 299534,
+"type": "movie",
+"media": "movie",
+"name": "Avengers: Endgame Encore",
+"name_ml": "\u0d05\u0d35\u0d1e\u0d4d\u0d1a\u0d47\u0d34\u0d4d\u200c\u0d38\u0d4d: \u0d0e\u0d7b\u0d21\u0d4d\u0d17\u0d46\u0d2f\u0d3f\u0d02 \u0d0e\u0d7b\u0d15\u0d4b\u0d7c",
+"year": "2026",
+"poster_path": "/jtDv3lCnST0fZRvdYFwR5CVwK2x.jpg",
+"backdrop_path": "/7RyHsO4yDXtBv1zUU3mTpHeQ0d5.jpg",
+"overview": "After the devastating events of Avengers: Infinity War, the universe is in ruins due to the efforts of the Mad Titan, Thanos. With the help of remaining allies, the Avengers must assemble once more in order to undo Thanos' actions and restore order to the universe once and for all, no matter what consequences may be in store.",
+"genre_ids": [
+12,
+878,
+28
+],
+"post_url": "https://malayalamsubtitles.org/languages/english/avengers-endgame-2026/",
+"imdb_id": "tt4154796",
+"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2019/08/Avengers.Endgame.Encore-A.jpg.webp",
+"ml_src": "msone"
+},
 {
 "id": 1127384,
 "type": "movie",
@@ -6240,7 +6259,7 @@
 ],
 "post_url": "https://malayalamsubtitles.org/languages/english/sinners-2025/",
 "imdb_id": "tt31193180",
-"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2025/05/Sinners-2025P3.jpg.webp",
+"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2025/05/Sinners-2025P1.jpg.webp",
 "ml_src": "msone"
 },
 {
@@ -45852,7 +45871,7 @@
 ],
 "post_url": "https://malayalamsubtitles.org/languages/english/avengers-endgame-2019/",
 "imdb_id": "tt4154796",
-"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2019/08/Avengers.Endgame.2019-Renew.jpg.webp",
+"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2019/08/Avengers.Endgame.Encore-A.jpg.webp",
 "ml_src": "msone"
 },
 {
