@@ -1,7 +1,26 @@
 {
-"generated": "2026-11-17",
+"generated": "2026-11-18",
 "sections": {
 "New Releases": [
+{
+"id": 784130,
+"type": "movie",
+"media": "movie",
+"name": "The Night Belongs to Lovers",
+"name_ml": "\u0d26 \u0d28\u0d48\u0d31\u0d4d\u0d31\u0d4d \u0d2c\u0d3f\u0d32\u0d4b\u0d19\u0d4d\u0d19\u0d4d\u0d38\u0d4d \u0d1f\u0d41 \u0d32\u0d35\u0d47\u0d34\u0d4d\u0d38\u0d4d",
+"year": "2021",
+"poster_path": "/v7BHluWuDVffDWU1ijWmd2DM5hZ.jpg",
+"backdrop_path": "/mVHPPi946Qu1gEIthe5SCt9QHT5.jpg",
+"overview": "An encounter. Between waves and cliffs. The night. In a week, he gets married. For years, she no longer believes in pleasure. They meet. They play. They speak. They want each other. As a gift - unconditionally. Like a dance - on the edge of the void. For one night. One night only. Their only night.",
+"genre_ids": [
+10749,
+18
+],
+"post_url": "https://malayalamsubtitles.org/languages/french/the-night-belongs-to-lovers-2021/",
+"imdb_id": "tt13779412",
+"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/11/The-Night-Belongs-to-Lovers-2021-B.jpg.webp",
+"ml_src": "msone"
+},
 {
 "id": 299534,
 "type": "movie",
@@ -176,27 +195,6 @@
 "post_url": "https://malayalamsubtitles.org/languages/english/resident-evil-2026/",
 "imdb_id": "tt35538033",
 "ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/10/Resident.Evil_.2026.-A.jpg.webp",
-"ml_src": "msone"
-},
-{
-"id": 1369,
-"type": "movie",
-"media": "movie",
-"name": "Rambo: First Blood Part II",
-"name_ml": "\u0d31\u0d3e\u0d02\u0d2c\u0d4b: \u0d2b\u0d38\u0d4d\u0d31\u0d4d\u0d31\u0d4d \u0d2c\u0d4d\u0d32\u0d21\u0d4d \u0d2a\u0d3e\u0d7c\u0d1f\u0d4d\u0d1f\u0d4d II",
-"year": "1985",
-"poster_path": "/fVwRtWqEPdsCH21BVDGqgkAQcff.jpg",
-"backdrop_path": "/aPlgkT2FlD7EcE6Vi10I4RTzRqb.jpg",
-"overview": "John Rambo is released from prison by the government for a top-secret covert mission to the last place on Earth he'd want to return - the jungles of Vietnam.",
-"genre_ids": [
-28,
-12,
-53,
-10752
-],
-"post_url": "https://malayalamsubtitles.org/languages/english/rambo-first-blood-part-ii-1985/",
-"imdb_id": "tt0089880",
-"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/11/Rambo_2_poster_final.jpg.webp",
 "ml_src": "msone"
 }
 ],
@@ -532,6 +530,25 @@
 ]
 },
 "archive": [
+{
+"id": 784130,
+"type": "movie",
+"media": "movie",
+"name": "The Night Belongs to Lovers",
+"name_ml": "\u0d26 \u0d28\u0d48\u0d31\u0d4d\u0d31\u0d4d \u0d2c\u0d3f\u0d32\u0d4b\u0d19\u0d4d\u0d19\u0d4d\u0d38\u0d4d \u0d1f\u0d41 \u0d32\u0d35\u0d47\u0d34\u0d4d\u0d38\u0d4d",
+"year": "2021",
+"poster_path": "/v7BHluWuDVffDWU1ijWmd2DM5hZ.jpg",
+"backdrop_path": "/mVHPPi946Qu1gEIthe5SCt9QHT5.jpg",
+"overview": "An encounter. Between waves and cliffs. The night. In a week, he gets married. For years, she no longer believes in pleasure. They meet. They play. They speak. They want each other. As a gift - unconditionally. Like a dance - on the edge of the void. For one night. One night only. Their only night.",
+"genre_ids": [
+10749,
+18
+],
+"post_url": "https://malayalamsubtitles.org/languages/french/the-night-belongs-to-lovers-2021/",
+"imdb_id": "tt13779412",
+"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/11/The-Night-Belongs-to-Lovers-2021-B.jpg.webp",
+"ml_src": "msone"
+},
 {
 "id": 299534,
 "type": "movie",
