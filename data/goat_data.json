@@ -1,13 +1,56 @@
 {
-"generated": "2026-11-17T00:30:57",
+"generated": "2026-11-19T00:34:04",
 "site": "https://malayalamsubtitles.in",
-"total": 528,
+"total": 529,
 "missing_imdb": [
 "https://malayalamsubtitles.in/release/dahmer-monster-the-jefry-dahmer-story-2022/",
 "https://malayalamsubtitles.in/release/one-fine-week-2019/"
 ],
 "errors": [],
 "items": [
+{
+"post_url": "https://malayalamsubtitles.in/release/pooja-meri-jaan-2026/",
+"name_en": "POOJA MERI JAAN",
+"name_ml": "\u0d2a\u0d42\u0d1c\u0d3e \u0d2e\u0d47\u0d30\u0d3f \u0d1c\u0d3e\u0d7b",
+"year": "2026",
+"imdb_id": "tt21378820",
+"type": "movie",
+"genres": [
+"Thriller",
+"Romance",
+"Mystery"
+],
+"language": "\u0d39\u0d3f\u0d28\u0d4d\u0d26\u0d3f",
+"director": "Navjot Gulati, Vipasha Arvind",
+"translator": "\u0d06\u0d26\u0d3f\u0d24\u0d4d\u0d24\u0d4d",
+"sub_url": "https://wp.malayalamsubtitles.in/download/2043",
+"site_poster": "https://malayalamsubtitles.in/img/6WtLs7-KV2-1111.webp",
+"poster_url": "https://malayalamsubtitles.in/img/goatblack.webp",
+"tmdb_id": 1220538,
+"media": "movie",
+"poster_path": "/g6JmYwvEopRlHCV1NykM5NjSPrw.jpg",
+"backdrop_path": "/anwB9RlA2haerdblfBcl5OH9gtr.jpg",
+"overview": "After Pooja rejects Aniket\u2019s romantic advances, his subsequent death by suicide leaves her facing accusations. As lawyer and friend Sana investigates the circumstances surrounding the incident, questions of obsession, consent, responsibility and the truth behind Pooja\u2019s relationship with Aniket begin to emerge.",
+"genre_ids": [
+53,
+80,
+10749
+],
+"omdb": {
+"imdbRating": "6.6",
+"rt": null,
+"rated": "N/A",
+"runtime": "117 min",
+"metascore": "N/A",
+"genre": "Drama, Mystery, Romance",
+"director": "Vipasha Arvind, Navjot Gulati",
+"actors": "Huma Qureshi, Mrunal Thakur, Vijay Raaz",
+"language": "Hindi",
+"fetched": "2026-11-19"
+},
+"ml_poster": "https://malayalamsubtitles.in/img/6WtLs7-KV2-300.webp",
+"ml_src": "goatmm"
+},
 {
 "post_url": "https://malayalamsubtitles.in/release/ikatan-darah-2025/",
 "name_en": "IKATAN DARAH",
