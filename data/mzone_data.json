@@ -1,7 +1,27 @@
 {
-"generated": "2026-11-18",
+"generated": "2026-11-20",
 "sections": {
 "New Releases": [
+{
+"id": 281957,
+"type": "movie",
+"media": "movie",
+"name": "The Revenant",
+"name_ml": "\u0d26 \u0d31\u0d46\u0d35\u0d46\u0d28\u0d28\u0d4d\u0d31\u0d4d",
+"year": "2015",
+"poster_path": "/ji3ecJphATlVgWNY0B0RVXZizdf.jpg",
+"backdrop_path": "/hEQYZq2CDB2LSJVxxlazdBOKeyW.jpg",
+"overview": "In the 1820s, a frontiersman, Hugh Glass, sets out on a path of vengeance against those who left him for dead after a bear mauling.",
+"genre_ids": [
+37,
+18,
+12
+],
+"post_url": "https://malayalamsubtitles.org/languages/english/the-revenant-2015/",
+"imdb_id": "tt1663202",
+"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/11/The.Revenant.2015.jpg.webp",
+"ml_src": "msone"
+},
 {
 "id": 784130,
 "type": "movie",
@@ -175,26 +195,6 @@
 "post_url": "https://malayalamsubtitles.org/languages/mandarin/the-assassin-2015/",
 "imdb_id": "tt3508840",
 "ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/11/The-Assassin-2026-.jpg.webp",
-"ml_src": "msone"
-},
-{
-"id": 1423191,
-"type": "movie",
-"media": "movie",
-"name": "Resident Evil",
-"name_ml": "\u0d31\u0d46\u0d38\u0d3f\u0d21\u0d28\u0d4d\u0d31\u0d4d \u0d08\u0d35\u0d3f\u0d7e",
-"year": "2026",
-"poster_path": "/i7UyjfPio0VFHB9rBUZSFyhOoM8.jpg",
-"backdrop_path": "/3icyRAqgakNcQn6aDVz9libFmBA.jpg",
-"overview": "Medical courier Bryan unwittingly finds himself fighting for survival as one fateful, horrifying night collapses around him in chaos.",
-"genre_ids": [
-27,
-878,
-12
-],
-"post_url": "https://malayalamsubtitles.org/languages/english/resident-evil-2026/",
-"imdb_id": "tt35538033",
-"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/10/Resident.Evil_.2026.-A.jpg.webp",
 "ml_src": "msone"
 }
 ],
@@ -61367,7 +61367,7 @@
 ],
 "post_url": "https://malayalamsubtitles.org/languages/english/the-revenant-2015/",
 "imdb_id": "tt1663202",
-"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2020/02/267.-the_revenanat_robin.jpg.webp",
+"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/11/The.Revenant.2015.jpg.webp",
 "ml_src": "msone"
 },
 {
