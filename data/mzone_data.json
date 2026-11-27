@@ -1,7 +1,27 @@
 {
-"generated": "2026-11-26",
+"generated": "2026-11-27",
 "sections": {
 "New Releases": [
+{
+"id": 290250,
+"type": "movie",
+"media": "movie",
+"name": "The Nice Guys",
+"name_ml": "\u0d26 \u0d28\u0d48\u0d38\u0d4d \u0d17\u0d2f\u0d4d\u0d38\u0d4d",
+"year": "2016",
+"poster_path": "/clq4So9spa9cXk3MZy2iMdqkxP2.jpg",
+"backdrop_path": "/oLp6ueqQXNWvWCFwrb6tXDnH0Ye.jpg",
+"overview": "A private eye investigates the apparent suicide of a fading porn star in 1970s Los Angeles and uncovers a conspiracy.",
+"genre_ids": [
+35,
+80,
+28
+],
+"post_url": "https://malayalamsubtitles.org/languages/english/the-nice-guys-2016/",
+"imdb_id": "tt3799694",
+"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/11/The.Nice_.Guys_.2016.Side-B.jpg.webp",
+"ml_src": "msone"
+},
 {
 "id": 1616687,
 "type": "movie",
@@ -174,26 +194,6 @@
 "post_url": "https://malayalamsubtitles.org/languages/english/childs-play-1988/",
 "imdb_id": "tt0094862",
 "ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/11/Childs-Play-1988.jpg.webp",
-"ml_src": "msone"
-},
-{
-"id": 122906,
-"type": "movie",
-"media": "movie",
-"name": "About Time",
-"name_ml": "\u0d0e\u0d2c\u0d57\u0d1f\u0d4d\u0d1f\u0d4d \u0d1f\u0d48\u0d02",
-"year": "2013",
-"poster_path": "/ls6zswrOZVhCXQBh96DlbnLBajM.jpg",
-"backdrop_path": "/einbto9qLXFx9QXxEHylaxDbKPx.jpg",
-"overview": "The night after another unsatisfactory New Year's party, Tim's father reveals to him that the men in their family have the ability to travel through time. They can't change history, but they can change what happens and has happened in their own lives. Thus begins the start of a lesson in learning to appreciate life itself as it is, as it comes, and most importantly, the people living alongside us.",
-"genre_ids": [
-18,
-10749,
-14
-],
-"post_url": "https://malayalamsubtitles.org/languages/english/about-time-2013/",
-"imdb_id": "tt2194499",
-"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/11/about-time-2013.jpg.webp",
 "ml_src": "msone"
 }
 ],
@@ -529,6 +529,26 @@
 ]
 },
 "archive": [
+{
+"id": 290250,
+"type": "movie",
+"media": "movie",
+"name": "The Nice Guys",
+"name_ml": "\u0d26 \u0d28\u0d48\u0d38\u0d4d \u0d17\u0d2f\u0d4d\u0d38\u0d4d",
+"year": "2016",
+"poster_path": "/clq4So9spa9cXk3MZy2iMdqkxP2.jpg",
+"backdrop_path": "/oLp6ueqQXNWvWCFwrb6tXDnH0Ye.jpg",
+"overview": "A private eye investigates the apparent suicide of a fading porn star in 1970s Los Angeles and uncovers a conspiracy.",
+"genre_ids": [
+35,
+80,
+28
+],
+"post_url": "https://malayalamsubtitles.org/languages/english/the-nice-guys-2016/",
+"imdb_id": "tt3799694",
+"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/11/The.Nice_.Guys_.2016.Side-B.jpg.webp",
+"ml_src": "msone"
+},
 {
 "id": 1616687,
 "type": "movie",
