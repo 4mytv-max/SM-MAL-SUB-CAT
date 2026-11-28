@@ -1,7 +1,27 @@
 {
-"generated": "2026-11-27",
+"generated": "2026-11-28",
 "sections": {
 "New Releases": [
+{
+"id": 1385536,
+"type": "movie",
+"media": "movie",
+"name": "Sore: A Wife from the Future",
+"name_ml": "\u0d38\u0d4b\u0d31\u0d47: \u0d0e \u0d35\u0d48\u0d2b\u0d4d \u0d2b\u0d4d\u0d30\u0d02 \u0d26 \u0d2b\u0d4d\u0d2f\u0d42\u0d1a\u0d4d\u0d1a\u0d7c",
+"year": "2025",
+"poster_path": "/rpqkqiqv1nl9MbdnOLKLbqqkJSj.jpg",
+"backdrop_path": "/sTNzZZdIm7csFdgnvP20XmSJRTx.jpg",
+"overview": "A young man living alone in Croatia encounters a woman who claims to be his wife from the future, sent on a mission to help him correct his bad habits and improve his lifestyle.",
+"genre_ids": [
+14,
+10749,
+18
+],
+"post_url": "https://malayalamsubtitles.org/languages/indonesian/sore-a-wife-from-the-future-2025/",
+"imdb_id": "tt34548722",
+"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/11/Sore-A-Wife-from-the-Future-2025.jpg.webp",
+"ml_src": "msone"
+},
 {
 "id": 290250,
 "type": "movie",
@@ -176,24 +196,6 @@
 "post_url": "https://malayalamsubtitles.org/languages/english/savage-prey-2026/",
 "imdb_id": "tt38072958",
 "ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/11/Savage-Prey-2026.jpg.webp",
-"ml_src": "msone"
-},
-{
-"id": 10585,
-"type": "movie",
-"media": "movie",
-"name": "Child's Play",
-"name_ml": "\u0d1a\u0d48\u0d7d\u0d21\u0d4d\u0d38\u0d4d \u0d2a\u0d4d\u0d32\u0d47",
-"year": "1988",
-"poster_path": "/wvpgvcWNkF2HLuTEMIM7K83MvZ.jpg",
-"backdrop_path": "/edghRD7vw1XgWEpMLpGt1VSGB5w.jpg",
-"overview": "After being shot in a toy store, a serial killer transfers his soul into a Good Guy doll. A mother then gifts it to her six-year-old son Andy, which unleashes terror upon the city.",
-"genre_ids": [
-27
-],
-"post_url": "https://malayalamsubtitles.org/languages/english/childs-play-1988/",
-"imdb_id": "tt0094862",
-"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/11/Childs-Play-1988.jpg.webp",
 "ml_src": "msone"
 }
 ],
@@ -529,6 +531,26 @@
 ]
 },
 "archive": [
+{
+"id": 1385536,
+"type": "movie",
+"media": "movie",
+"name": "Sore: A Wife from the Future",
+"name_ml": "\u0d38\u0d4b\u0d31\u0d47: \u0d0e \u0d35\u0d48\u0d2b\u0d4d \u0d2b\u0d4d\u0d30\u0d02 \u0d26 \u0d2b\u0d4d\u0d2f\u0d42\u0d1a\u0d4d\u0d1a\u0d7c",
+"year": "2025",
+"poster_path": "/rpqkqiqv1nl9MbdnOLKLbqqkJSj.jpg",
+"backdrop_path": "/sTNzZZdIm7csFdgnvP20XmSJRTx.jpg",
+"overview": "A young man living alone in Croatia encounters a woman who claims to be his wife from the future, sent on a mission to help him correct his bad habits and improve his lifestyle.",
+"genre_ids": [
+14,
+10749,
+18
+],
+"post_url": "https://malayalamsubtitles.org/languages/indonesian/sore-a-wife-from-the-future-2025/",
+"imdb_id": "tt34548722",
+"ml_poster": "https://malayalamsubtitles.org/wp-content/uploads/2026/11/Sore-A-Wife-from-the-Future-2025.jpg.webp",
+"ml_src": "msone"
+},
 {
 "id": 290250,
 "type": "movie",
